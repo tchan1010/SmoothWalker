@@ -92,7 +92,19 @@ class DataTableViewController: UITableViewController {
         let dataValue = dataValues[indexPath.row]
         
         cell.textLabel?.text = formattedValue(dataValue.value, typeIdentifier: dataTypeIdentifier)
-        cell.detailTextLabel?.text = dateFormatter.string(from: dataValue.startDate)
+        
+        switch (WalkingSpeedViewController.displayTimeline) {
+        case .weekly:
+            let dateFormatter2 = DateFormatter()
+            dateFormatter2.dateFormat = "MM/dd/YY"
+            cell.detailTextLabel?.text = dateFormatter2.string(from:dataValue.startDate)
+                + " - " + dateFormatter2.string(from:dataValue.endDate)
+        case .monthly:
+            let dateStrs = dateFormatter.string(from: dataValue.startDate).components(separatedBy: " ")
+            cell.detailTextLabel?.text = dateStrs[0] + " " + dateStrs[2]
+        case .daily:
+            cell.detailTextLabel?.text = dateFormatter.string(from: dataValue.startDate)
+        }
         
         return cell
     }

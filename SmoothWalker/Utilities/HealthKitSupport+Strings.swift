@@ -25,6 +25,8 @@ func getDataTypeName(for identifier: String) -> String? {
             description = "Distance Walking + Running"
         case .sixMinuteWalkTestDistance:
             description = "Six-Minute Walk"
+        case .walkingSpeed:
+            description = WalkingSpeedViewController.displayTimeline.rawValue + " Average Walking Speed"
         default:
             break
         }
@@ -58,7 +60,9 @@ private func getRoundedValue(for value: Double, with unit: HKUnit) -> String? {
     switch unit {
     case .count(), .meter():
         let numberValue = NSNumber(value: round(value))
-        
+        return numberFormatter.string(from: numberValue)
+    case meterPerSecond:
+        let numberValue = NSNumber(value: value)
         return numberFormatter.string(from: numberValue)
     default:
         return nil
@@ -73,6 +77,8 @@ func getUnitDescription(for unit: HKUnit) -> String? {
         return "steps"
     case .meter():
         return "meters"
+    case meterPerSecond:
+        return "meters/second"
     default:
         return nil
     }
@@ -84,6 +90,8 @@ private func getUnitSuffix(for unit: HKUnit) -> String? {
         return "steps"
     case .meter():
         return "m"
+    case meterPerSecond:
+        return "m/s"
     default:
         return nil
     }

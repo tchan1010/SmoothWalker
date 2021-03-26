@@ -15,7 +15,8 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     
     var mobilityContent: [String] = [
         HKQuantityTypeIdentifier.stepCount.rawValue,
-        HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue
+        HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue,
+        HKQuantityTypeIdentifier.walkingSpeed.rawValue
     ]
     
     var queries: [HKAnchoredObjectQuery] = []

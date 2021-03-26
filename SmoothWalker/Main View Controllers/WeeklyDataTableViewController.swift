@@ -83,6 +83,8 @@ class WeeklyQuantitySampleTableViewController: HealthDataTableViewController, He
                     dataValue.value = quantity.doubleValue(for: unit)
                 }
                 
+               // print("--- add dataValue: \(dataValue), statistics: \(statistics)")
+                
                 self?.dataValues.append(dataValue)
             }
             

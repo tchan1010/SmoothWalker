@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		231CAF14260D04AD00EDCF56 /* DatesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231CAF13260D04AD00EDCF56 /* DatesUtility.swift */; };
+		23540CC5260C0F7100365BE3 /* WalkingSpeedTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23540CC4260C0F7100365BE3 /* WalkingSpeedTimeline.swift */; };
+		2373B0AA260BB2A40023371B /* WalkingSpeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2373B0A9260BB2A40023371B /* WalkingSpeedViewController.swift */; };
 		EB12722B24859C1600548CD1 /* DataTypeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB12722A24859C1600548CD1 /* DataTypeTableViewCell.swift */; };
 		EB12722D2485BA9400548CD1 /* HealthDataTypeValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB12722C2485BA9400548CD1 /* HealthDataTypeValue.swift */; };
 		EB12722F2485C83E00548CD1 /* EmptyDataBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB12722E2485C83E00548CD1 /* EmptyDataBackgroundView.swift */; };
@@ -41,7 +44,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8037822B27C5C24067AC1EBF /* SampleCode.xcconfig */ = {isa = PBXFileReference; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
+		231CAF13260D04AD00EDCF56 /* DatesUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatesUtility.swift; sourceTree = "<group>"; };
+		23540CC4260C0F7100365BE3 /* WalkingSpeedTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkingSpeedTimeline.swift; sourceTree = "<group>"; };
+		2373B0A9260BB2A40023371B /* WalkingSpeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkingSpeedViewController.swift; sourceTree = "<group>"; };
+		8037822B27C5C24067AC1EBF /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		DDC3EAD6D9404AADDCC92FF8 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		EB12722A24859C1600548CD1 /* DataTypeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypeTableViewCell.swift; sourceTree = "<group>"; };
 		EB12722C2485BA9400548CD1 /* HealthDataTypeValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDataTypeValue.swift; sourceTree = "<group>"; };
@@ -67,7 +73,7 @@
 		EB9525BF2474C9C2001B5178 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		EB9525C12475BD41001B5178 /* HealthKitSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitSupport.swift; sourceTree = "<group>"; };
 		EBEF213B2462289B0055F482 /* FeedItemCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedItemCollectionViewCell.swift; sourceTree = "<group>"; };
-		F06C5C28897D1C25EF30CF88 /* ACKNOWLEDGMENTS.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = ACKNOWLEDGMENTS.txt; sourceTree = "<group>"; };
+		F06C5C28897D1C25EF30CF88 /* ACKNOWLEDGMENTS.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = ACKNOWLEDGMENTS.txt; sourceTree = "<group>"; };
 		F9907AEF2458947C00987667 /* SmoothWalker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmoothWalker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9907AF22458947C00987667 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F9907AF42458947C00987667 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -77,7 +83,7 @@
 		F9907B002458947D00987667 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F9907B06245894E600987667 /* SmoothWalker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SmoothWalker.entitlements; sourceTree = "<group>"; };
 		F9907B08245894E600987667 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		FEDEA0134A58BE9A54B6DBA4 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE.txt; sourceTree = "<group>"; };
+		FEDEA0134A58BE9A54B6DBA4 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,7 +105,6 @@
 				FEDEA0134A58BE9A54B6DBA4 /* LICENSE.txt */,
 				F06C5C28897D1C25EF30CF88 /* ACKNOWLEDGMENTS.txt */,
 			);
-			name = LICENSE;
 			path = LICENSE;
 			sourceTree = "<group>";
 		};
@@ -192,6 +197,7 @@
 				EB9525B62474C396001B5178 /* WeeklyDataTableViewController.swift */,
 				EB644F9E24730E2B00CF27F0 /* MobilityChartDataViewController.swift */,
 				EB9525BB2474C930001B5178 /* WeeklyReportTableViewController.swift */,
+				2373B0A9260BB2A40023371B /* WalkingSpeedViewController.swift */,
 			);
 			name = "View Controllers";
 			path = "Main View Controllers";
@@ -213,6 +219,8 @@
 				EB48C1C3246B351C00AE8FE3 /* CareKitSupport.swift */,
 				EB9525C12475BD41001B5178 /* HealthKitSupport.swift */,
 				EB305B7D2485E4B8007A7694 /* HealthKitSupport+Strings.swift */,
+				23540CC4260C0F7100365BE3 /* WalkingSpeedTimeline.swift */,
+				231CAF13260D04AD00EDCF56 /* DatesUtility.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -360,7 +368,9 @@
 				EB12722F2485C83E00548CD1 /* EmptyDataBackgroundView.swift in Sources */,
 				EB9525B52474C282001B5178 /* HealthDataTableViewController.swift in Sources */,
 				EB305B7C2485D99B007A7694 /* HealthQueryTableViewController.swift in Sources */,
+				2373B0AA260BB2A40023371B /* WalkingSpeedViewController.swift in Sources */,
 				EB305B7E2485E4B8007A7694 /* HealthKitSupport+Strings.swift in Sources */,
+				23540CC5260C0F7100365BE3 /* WalkingSpeedTimeline.swift in Sources */,
 				EB644FA32473136500CF27F0 /* ServerResponse.swift in Sources */,
 				EB326B50246B1B5700FEFD08 /* HealthData.swift in Sources */,
 				EB9525C22475BD41001B5178 /* HealthKitSupport.swift in Sources */,
@@ -376,6 +386,7 @@
 				EB48C1C4246B351C00AE8FE3 /* CareKitSupport.swift in Sources */,
 				EB644F9F24730E2B00CF27F0 /* MobilityChartDataViewController.swift in Sources */,
 				EB9525C02474C9C2001B5178 /* WelcomeViewController.swift in Sources */,
+				231CAF14260D04AD00EDCF56 /* DatesUtility.swift in Sources */,
 				EB12722B24859C1600548CD1 /* DataTypeTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
