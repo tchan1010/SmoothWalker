@@ -20,7 +20,7 @@ Run the following commands on a Mac computer:
 4. Run Xcode on the SmoothWalker.xcodeproj
 5. Install the app onto your iPhone via Xcode
 
-Once you have the app installed on iPone, open the app and 
+Once you have the app installed on iPhone, open the app and 
 click the Walking Speed icon on the bottom tab bar. 
 
 To enable the Walking Speed page, you need to authorize the
