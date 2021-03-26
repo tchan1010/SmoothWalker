@@ -13,7 +13,6 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     
     /// The date from the latest server response.
     private var dateLastUpdated: Date?
-    
     private var originalData  = [HealthDataTypeValue]()
     
     /*------------------------------------------------------------------*/
@@ -22,13 +21,6 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     
     static var displayTimeline = Timeline.daily
     
-    func setupTimelineButton() {
-       
-        let barButtonItem = UIBarButtonItem(title: "Display", style: .plain, target: self, action: #selector(didTapShowButton))
-            
-        navigationItem.leftBarButtonItem = barButtonItem
-    }
-    
     // MARK: Initializers
     
     init() {
@@ -36,19 +28,25 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         
         // Set weekly predicate
         queryPredicate = createLastWeekPredicate()
-        
-        setupTimelineButton()
+    
+        // add the Show button
+        let barButtonItem = UIBarButtonItem(title: "Show", style: .plain, target: self, action: #selector(didTapShowButton))
+            
+        navigationItem.leftBarButtonItem = barButtonItem
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
     // MARK: - View Life Cycle Overrides
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        print("viewWillAppear: dataValues: \(dataValues.count)")
+            
         // Authorization
         if !dataValues.isEmpty { return }
         
@@ -56,12 +54,26 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         
         HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { (success) in
             if success {
-                self.originalData = []
-                // Perform the query and reload the data.
-                self.loadData()
+                print("request HS access successful. originalDate: \(self.originalData.count)...")
+                
+                if !self.originalData.isEmpty {
+                    self.originalData = []
+                    // Perform the query and reload the data.
+                    self.loadData()
+                }
+            }
+            else {
+                print("request HS access failed...")
             }
         }
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    
+        WalkingSpeedViewController.displayTimeline = .daily
+    }
+    
     
     //
     // change the diesplay timeline as per user
@@ -84,13 +96,11 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     func didTapShowButton() {
         
         guard !originalData.isEmpty else {
-            let alert = UIAlertController(title: "SmmothWalker", message: "No data avaailable yet", preferredStyle: .alert)
-            alert.addAction( UIAlertAction(title: "OK", style: .cancel, handler: nil) )
-            self.present(alert, animated: true, completion: nil)
+            showMsg(self,"Walking speed data unavailable. Did you click the Fetch button to load data?")
             return
         }
         
-        let vc = UIAlertController(title: "SmoothWalker", message: "Select a Display Timeline", preferredStyle: .actionSheet)
+        let vc = UIAlertController(title: "SmoothWalker", message: "Select a Display Option", preferredStyle: .actionSheet)
         
         for caseItem in Timeline.allCases {
             vc.addAction(
@@ -102,7 +112,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         }
         
         vc.addAction(
-            UIAlertAction(title: "Charts", style: .default, handler: {
+            UIAlertAction(title: "All Charts", style: .default, handler: {
                 action in
                 let chartVC = WalkingSpeedChartsViewController()
                 chartVC.originalData = self.originalData
@@ -117,6 +127,14 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     
     @objc
     override func didTapFetchButton() {
+        
+        guard originalData.isEmpty else {
+            
+            showMsg(self,"You have already fetched data")
+            return
+        }
+
+        
         Network.pull() { [weak self] (serverResponse) in
             self?.dateLastUpdated = serverResponse.date
             self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
@@ -155,16 +173,17 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         }
         
         HealthData.healthStore.save(addedSamples) { (success, error) in
+           
             if success {
                 self.originalData = []
                 self.loadData()
             }
+            else if let error = error {
+                DispatchQueue.main.async {
+                    showMsg(self,"Access health store failed. Error: \(error.localizedDescription).\nIf you have previously denied the app's access to the Walking Speed category, please authorize the app (read and write) access to that category in the Health app; otherwise please visit the Welcome page and request authorization of all categories, including the Walking Speed")
+                }
+            }
         }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        WalkingSpeedViewController.displayTimeline = .daily
     }
     
     private func setupDataValuesForTimeline() {

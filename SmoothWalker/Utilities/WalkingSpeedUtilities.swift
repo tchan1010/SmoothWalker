@@ -6,15 +6,18 @@
 //  Copyright © 2021 Apple. All rights reserved.
 //
 
+import UIKit
 import Foundation
 import HealthKit
 
 //
+// -------------------------------------------------------------------------
 // Walking speed HKUnit
 //
 let meterPerSecond = HKUnit(from: "m/s")
 
 //
+// -------------------------------------------------------------------------
 // Utilities to handle the display of different
 // walking speed timelines
 //
@@ -24,12 +27,12 @@ enum Timeline : String, CaseIterable  {
     case monthly = "Monthly"
 }
 
-let DISPLAY_TIMELINE = "DisplayTimeLine"
+fileprivate let DISPLAY_TIMELINE = "DisplayTimeLine"
 
 //
 // save user-selected display timeline for walking speed
 //
-internal func saveUserSelectedTimeline(_ timeline : Timeline) {
+func saveUserSelectedTimeline(_ timeline : Timeline) {
     
     UserDefaults.standard.set(timeline.rawValue, forKey:DISPLAY_TIMELINE)
 }
@@ -37,7 +40,7 @@ internal func saveUserSelectedTimeline(_ timeline : Timeline) {
 //
 // restore any user-selected display timeline for walking speed
 //
-internal func restoreUserSelectedTimeline() -> Timeline {
+func restoreUserSelectedTimeline() -> Timeline {
     
     /* restore the last user-selected display timeline */
     if let strTimeline = UserDefaults.standard.string(forKey:DISPLAY_TIMELINE) {
@@ -47,6 +50,7 @@ internal func restoreUserSelectedTimeline() -> Timeline {
 }
 
 //
+// -------------------------------------------------------------------------
 //  Utilities constants and functions for date processing
 //
 
@@ -146,9 +150,11 @@ private func addPlaceholderData(_ year : Int,_ month : Int,
     _ day : Int, _ offset : Int, _ dataValues : inout [HealthDataTypeValue])
 {
     if (month >= 1 && month <= 12) {
-        let date = composeDate(year,month,day)
-        let endDate = offset == -1 ? composeDate(year,month,-1) : composeOffsetDate(year,month,day,offset)
-        dataValues.append( HealthDataTypeValue(startDate:date!, endDate:endDate!,value:0.0))
+        if let date = composeDate(year,month,day),
+           let endDate = offset == -1 ? composeDate(year,month,-1) : composeOffsetDate(year,month,day,offset)
+        {
+            dataValues.append( HealthDataTypeValue(startDate:date, endDate:endDate,value:0.0))
+        }
     }
 }
 
@@ -253,4 +259,18 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         addPlaceholderData(year,month+1,1,-1,&dataValues)
     }
     return dataValues
+}
+
+//
+// -------------------------------------------------------------------------
+// Misc
+//
+
+func showMsg(_ caller : UIViewController, _ msg : String) {
+    
+    let alert = UIAlertController(title: "SmoothWalker", message: msg, preferredStyle: .alert)
+    
+    alert.addAction( UIAlertAction(title: "OK", style: .cancel, handler: nil) )
+    
+    caller.present(alert, animated: true, completion: nil)
 }
