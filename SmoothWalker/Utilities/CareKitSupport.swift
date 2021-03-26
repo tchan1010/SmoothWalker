@@ -92,9 +92,8 @@ func createHorizontalAxisMarkers(lastDate: Date = Date(), useWeekdays: Bool = tr
 func createHorizontalAxisMarkers(for dates: [Date]) -> [String] {
     
     if WalkingSpeedViewController.displayTimeline == .monthly {
-        let months = ["Jan", "Feb", "Mar", "Apr", "May",
-                      "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        return dates.map{ months[extractDate($0).month - 1] }
+       
+        return dates.map{ monthTitles[extractDate($0).month - 1] }
     }
     
     let dateFormatter = createMonthDayDateFormatter()

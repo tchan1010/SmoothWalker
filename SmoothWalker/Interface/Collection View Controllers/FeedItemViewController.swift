@@ -26,7 +26,7 @@ class DataTypeCollectionViewController: UIViewController {
         return collectionView
     }()
     
-    var data: [(dataTypeIdentifier: String, values: [Double])] = []
+    var data: [(dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?)] = []
     
     // MARK: - Initalizers
     
@@ -124,7 +124,7 @@ class DataTypeCollectionViewController: UIViewController {
         heightInset += navigationController?.navigationBar.bounds.height ?? 0
         heightInset += tabBarController?.tabBar.bounds.height ?? 0
         
-        let cellHeight = isLandscape ? view.bounds.height - heightInset : view.bounds.width - widthInset
+        let cellHeight = isLandscape ? view.bounds.height - heightInset :  view.bounds.width - widthInset
         
         return cellHeight
     }
@@ -138,11 +138,13 @@ extension DataTypeCollectionViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let content = data[indexPath.row]
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Self.cellIdentifier,
-                                                            for: indexPath) as? DataTypeCollectionViewCell else {
+                    for: indexPath) as? DataTypeCollectionViewCell else {
             return DataTypeCollectionViewCell()
         }
         
-        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values)
+        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values, labels:content.labels,
+            timeStamp:content.timeStamp,
+            row: indexPath.row)
         
         return cell
     }

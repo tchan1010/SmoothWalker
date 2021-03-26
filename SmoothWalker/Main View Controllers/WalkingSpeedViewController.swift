@@ -9,8 +9,6 @@
 import UIKit
 import HealthKit
 
-public let meterPerSecond = HKUnit(from: "m/s")
-
 class WalkingSpeedViewController: HealthQueryTableViewController {
     
     /// The date from the latest server response.
@@ -26,7 +24,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     
     func setupTimelineButton() {
        
-        let barButtonItem = UIBarButtonItem(title: "Timeline", style: .plain, target: self, action: #selector(didTapShowButton))
+        let barButtonItem = UIBarButtonItem(title: "Display", style: .plain, target: self, action: #selector(didTapShowButton))
             
         navigationItem.leftBarButtonItem = barButtonItem
     }
@@ -84,6 +82,14 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     //
     @objc
     func didTapShowButton() {
+        
+        guard !originalData.isEmpty else {
+            let alert = UIAlertController(title: "SmmothWalker", message: "No data avaailable yet", preferredStyle: .alert)
+            alert.addAction( UIAlertAction(title: "OK", style: .cancel, handler: nil) )
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
         let vc = UIAlertController(title: "SmoothWalker", message: "Select a Display Timeline", preferredStyle: .actionSheet)
         
         for caseItem in Timeline.allCases {
@@ -94,6 +100,16 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             }))
            
         }
+        
+        vc.addAction(
+            UIAlertAction(title: "Charts", style: .default, handler: {
+                action in
+                let chartVC = WalkingSpeedChartsViewController()
+                chartVC.originalData = self.originalData
+                self.present(chartVC, animated: true, completion: nil)
+            })
+        )
+        
         vc.addAction( UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         self.present(vc, animated: true, completion: nil)
@@ -146,120 +162,9 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         }
     }
     
-    //
-    // Collect data for weekly average walking speed
-    //
-    private func setupWeeklyDataValues() {
-       
-        guard !originalData.isEmpty else {
-            return
-        }
-        dataValues = []
-        let calendar: Calendar = .current
-        let firstDate = originalData.first!.startDate
-        var weekday = calendar.component(.weekday, from: firstDate)
-        var startDate : Date?
-        var earliestDate : Date?
-        var endDate : Date?
-        var sum : Double = 0.0
-        
-        for index in 0..<originalData.count {
-            let item = originalData[index]
-            let (year,month,day) = extractDate(item.startDate)
-            if (startDate == nil) {
-                startDate = composeOffsetDate(year,month,day,-weekday)
-                if earliestDate == nil {
-                    earliestDate = startDate
-                    let (year2,month2,day2) = extractDate(startDate!)
-                    if (day2 > 7) {
-                        addPlaceholderData(year2,month2,day2-7,6)
-                    }
-                }
-            }
-            sum += item.value
-            endDate = item.endDate
-            weekday += 1
-            if weekday >= 7 {
-                weekday = 0
-                let data = HealthDataTypeValue(startDate:startDate!, endDate:item.endDate,value:sum/7.0)
-                dataValues.append(data)
-                sum = 0.0
-                startDate = nil
-            }
-        }
-        if startDate != nil {
-            let offset = 7 - weekday
-            let (year,month,day) = extractDate(endDate!)
-            endDate = composeOffsetDate(year,month,day,offset)
-            let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/7.0)
-            dataValues.append(data)
-            let (year2,month2,day2) = extractDate(endDate!)
-            addPlaceholderData(year2,month2,day2+1,7)
-        }
-    }
-    
-    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         WalkingSpeedViewController.displayTimeline = .daily
-    }
-    
-    //
-    // Add a dummy data value for weekly or monthlu averago
-    //
-    private func addPlaceholderData(_ year : Int,_ month : Int,
-                                    _ day : Int = 1, _ offset : Int = -1)
-    {
-        if (month >= 1 && month <= 12) {
-            let date = composeDate(year,month,day)
-            let endDate = offset == -1 ? composeDate(year,month,-1) : composeOffsetDate(year,month,day,offset)
-            let data = HealthDataTypeValue(startDate:date!, endDate:endDate!,value:0.0)
-            dataValues.append(data)
-        }
-    }
-    
-    //
-    // Collect data for monthly average walking speed
-    //
-    private func setupMonthlylyDataValues() {
-       
-        guard !originalData.isEmpty else {
-            return
-        }
-        dataValues = []
-        var currentMonth = -1
-        var startDate : Date?
-        var sum : Double = 0.0
-        
-        for index in 0..<originalData.count {
-            let item = originalData[index]
-            let (year,month,_) = extractDate(item.startDate)
-            if currentMonth == -1 {
-                currentMonth = month
-                addPlaceholderData(year,month-1)
-            }
-            else if currentMonth != month {
-                if startDate != nil {
-                    let endDate = composeDate(year,currentMonth,-1)
-                    let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(currentMonth,year)))
-                    dataValues.append(data)
-                }
-                sum = 0.0
-                startDate = nil
-                currentMonth = month
-            }
-            if (startDate == nil) {
-                startDate = composeDate(year,month,1)
-            }
-            sum += item.value
-        }
-        if startDate != nil {
-            let (year,month,_) = extractDate(startDate!)
-            let endDate = composeDate(year,month,-1)
-            let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(month,year)))
-            dataValues.append(data)
-            addPlaceholderData(year,month+1)
-        }
     }
     
     private func setupDataValuesForTimeline() {
@@ -268,10 +173,10 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         case .daily:
             dataValues = originalData
         case .weekly:
-            setupWeeklyDataValues()
+            dataValues = xlateWeeklyDataValues(originalData)
             break
         case .monthly:
-            setupMonthlylyDataValues()
+            dataValues = xlateMonthlyDataValues(originalData)
             break;
         }
     }
@@ -293,7 +198,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             
             var maxY = 0.0;
             self.dataValues.forEach { maxY = max(maxY,$0.value) }
-            maxY = maxY < 1.0 ? 1.0 :  round(maxY + 0.8) 
+            maxY =  maxY < 1.0 ? 1.0 :  round(maxY + 0.8)
             
             self.chartView.graphView.yMinimum = 0
             self.chartView.graphView.yMaximum = CGFloat(maxY)

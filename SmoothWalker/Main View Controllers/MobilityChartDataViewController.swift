@@ -15,8 +15,7 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     
     var mobilityContent: [String] = [
         HKQuantityTypeIdentifier.stepCount.rawValue,
-        HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue,
-        HKQuantityTypeIdentifier.walkingSpeed.rawValue
+        HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue
     ]
     
     var queries: [HKAnchoredObjectQuery] = []
@@ -26,7 +25,7 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        data = mobilityContent.map { ($0, []) }
+        data = mobilityContent.map { ($0, [], [], nil) }
     }
     
     override func viewWillAppear(_ animated: Bool) {

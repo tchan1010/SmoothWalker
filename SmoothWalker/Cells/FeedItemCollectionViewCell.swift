@@ -63,18 +63,31 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         return [leading, top, trailing, bottom]
     }
     
-    func updateChartView(with dataTypeIdentifier: String, values: [Double]) {
+    func getChartHeader(_ row : Int) -> String {
+        switch (row) {
+        case 0: return "Daily Average Walking Speed"
+        case 1: return "Weekly Average Walkig Speed"
+        default: return "Monhly Average Walking Speed"
+        }
+    }
+    
+    func updateChartView(with dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?, row : Int) {
         self.dataTypeIdentifier = dataTypeIdentifier
         self.statisticalValues = values
         
+        /*
         // Update headerView
-        chartView.headerView.titleLabel.text = getDataTypeName(for: dataTypeIdentifier) ?? "Data"
-        chartView.headerView.detailLabel.text = createChartWeeklyDateRangeLabel()
-        
+        chartView.headerView.titleLabel.text = !labels.isEmpty ?
+            getChartHeader(row) :
+            getDataTypeName(for: dataTypeIdentifier) ?? "Data"
+        chartView.headerView.detailLabel.text =
+            timeStamp ?? createChartWeeklyDateRangeLabel()
+        */
         // Update graphView
         chartView.applyDefaultConfiguration()
-        chartView.graphView.horizontalAxisMarkers = createHorizontalAxisMarkers()
+        chartView.graphView.horizontalAxisMarkers = labels.isEmpty ? createHorizontalAxisMarkers() : labels
         
+       
         // Update graphView dataSeries
         let dataPoints: [CGFloat] = statisticalValues.map { CGFloat($0) }
         
@@ -84,9 +97,23 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         else {
             return
         }
+         
+        var maxY = 0.0
+        values.forEach { maxY = max(maxY,$0) }
+        maxY = maxY < 1.0 ? 1.0 : round(maxY + 0.8)
         
-        chartView.graphView.dataSeries = [
+        self.chartView.graphView.yMinimum = 0
+        self.chartView.graphView.yMaximum = CGFloat(maxY)
+        
+        self.chartView.graphView.dataSeries = [
             OCKDataSeries(values: dataPoints, title: unitTitle)
         ]
+            
+        self.chartView.headerView.titleLabel.text = !labels.isEmpty ?
+                self.getChartHeader(row) :
+                getDataTypeName(for: dataTypeIdentifier) ?? "Data"
+        self.chartView.headerView.detailLabel.text =
+                timeStamp ?? createChartWeeklyDateRangeLabel()
+    
     }
 }

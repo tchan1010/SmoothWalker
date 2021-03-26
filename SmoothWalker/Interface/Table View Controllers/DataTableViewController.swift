@@ -81,7 +81,7 @@ class DataTableViewController: UITableViewController {
     // MARK: - UITableViewDataSource
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataValues.count
+        return dataValues.filter{ $0.value > 0.0 }.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -89,7 +89,7 @@ class DataTableViewController: UITableViewController {
             return DataTypeTableViewCell()
         }
         
-        let dataValue = dataValues[indexPath.row]
+        let dataValue = dataValues.filter{ $0.value > 0.0}[indexPath.row]
         
         cell.textLabel?.text = formattedValue(dataValue.value, typeIdentifier: dataTypeIdentifier)
         
