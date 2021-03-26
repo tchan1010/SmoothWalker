@@ -14,3 +14,5 @@ Version History
 
 3/23/21  Created the SmoothWalker GitHub respository
          Created the depictWalkingSpeed branch
+
+3/26/21  Checked-in updated code for Walking Speed feature.
