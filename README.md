@@ -21,22 +21,23 @@ Run the following commands on a Mac computer:
 5. Install the app onto your iPhone via Xcode
 
 Once you have the app installed on iPhone, open the app and 
-click the Walking Speed icon on the bottom tab bar. 
+click the Walking Speed icon in the bottom tab bar. 
 
-To enable the Walking Speed page, you need to authorize the
-app to have access (read and write) to the Walking Speed category
-in the Health Store. You may do that via the app's Welcome page,
-Health app, or when your are prompted when you access the Walking 
-Speed page the very first time.  
+To enable the walking speed page, you need to authorize the
+app to have the walking speed access right in the Health Store.
+You may do that via the app's Welcome page or when prompted 
+when you access the walking speed page the first time. However, 
+if you deny authorizing the walking speed access for the app, 
+you will not see any data in the walking speed page, and you 
+will need to authorize the walking Speed access right to the
+app in the Health app.  
 
-On the Walking Speed page, click the Fetch button to load the
-mocked data to the health store. You may then click the Show button 
-to see the following information:
-
-1. Daily average walking speed - chart and table
-2. Weekly average walking speed - chart and table
-3. Monthly average walking speed - chart and table
-4. Daily, weekly and monthly walking speed charts all on the same page
+Once you have authorized the walking speed access right to the
+app, open the walking speed page, and you will see three charts
+that show the daily, weekly and monthly average walking speed, 
+respectively. You may tap on a chart to view the detailed page
+of that chart. You may dismiss the detailed page by tapping on 
+anywhere in that view.
 
 
 Version History
@@ -45,3 +46,7 @@ Version History
          Created the depictWalkingSpeed branch
 
 3/26/21  Checked-in updated code for Walking Speed feature.
+
+3/27/21  Show all charts on the Walking Speed main page.
+         When user taps on a chart, show the detailed page 
+         for that chart (chart and table).

@@ -64,7 +64,7 @@ class MainTabViewController: UITabBarController {
     }
     
     private func createWalkingSpeedTableViewController() -> UIViewController {
-        let viewController = WalkingSpeedViewController()
+        let viewController = WalkingSpeedChartsViewController()
         
         viewController.tabBarItem = UITabBarItem(title: "Walking Speed",
                                                  image: UIImage(systemName: "figure.walk"),

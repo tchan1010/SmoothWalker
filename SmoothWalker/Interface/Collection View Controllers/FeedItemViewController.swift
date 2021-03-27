@@ -24,6 +24,7 @@ class DataTypeCollectionViewController: UIViewController {
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.dataSource = self
+        collectionView.delegate = self
         collectionView.register(DataTypeCollectionViewCell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.alwaysBounceVertical = true
         
@@ -135,7 +136,14 @@ class DataTypeCollectionViewController: UIViewController {
     }
 }
 
-extension DataTypeCollectionViewController: UICollectionViewDataSource {
+extension DataTypeCollectionViewController: UICollectionViewDataSource, UICollectionViewDelegate
+{
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+       
+        collectionView.deselectItem(at: indexPath, animated: true)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data.count
     }

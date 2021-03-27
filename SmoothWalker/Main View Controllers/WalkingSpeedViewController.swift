@@ -15,10 +15,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     private var dateLastUpdated: Date?
     private var originalData  = [HealthDataTypeValue]()
     
-    /*------------------------------------------------------------------*/
-   
     /// MARK:  Handle different display timelines as selected by user
-    
     static var displayTimeline = Timeline.daily
     
     // MARK: Initializers
@@ -26,13 +23,11 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     init() {
         super.init(dataTypeIdentifier: HKQuantityTypeIdentifier.walkingSpeed.rawValue)
         
-        // Set weekly predicate
-        queryPredicate = createLastWeekPredicate()
-    
-        // add the Show button
-        let barButtonItem = UIBarButtonItem(title: "Show", style: .plain, target: self, action: #selector(didTapShowButton))
-            
-        navigationItem.leftBarButtonItem = barButtonItem
+        //
+        // allow user to exit this view via tapping on the view
+        //
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapBackButton))
+        self.view.addGestureRecognizer(tap)
     }
     
     required init?(coder: NSCoder) {
@@ -45,48 +40,21 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        print("viewWillAppear: dataValues: \(dataValues.count)")
-            
-        // hide the Fetch button
+        // hide the superclass Fetch button
         if let fetchButton = navigationItem.rightBarButtonItem {
             fetchButton.title = ""
         }
         
-        // Authorization
-        if !dataValues.isEmpty { return }
-        
-        WalkingSpeedViewController.displayTimeline =  restoreUserSelectedTimeline()
-        
-        HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { [self] (success) in
-            if success {
-                print("request HS access successful. originalDate: \(self.originalData.count)...")
-                
-                if !self.originalData.isEmpty {
-                    self.originalData = []
-                    // Perform the query and reload the data.
-                    self.loadData()
-                }
-                else {
-                    self.fetchMockedData()
-                }
-            }
+        guard !self.dataValues.isEmpty else {
+            return
         }
+     
+        //
+        // Caller has setup dataValues and displayTimeline
+        // Noew show the chart and detailed table
+        //
+        self.reloadData()
     }
-    
-    private func fetchMockedData() {
-        Network.pull() { [weak self] (serverResponse) in
-            self?.dateLastUpdated = serverResponse.date
-            self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
-            self?.handleServerResponse(serverResponse)
-        }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-    
-        WalkingSpeedViewController.displayTimeline = .daily
-    }
-    
     
     //
     // change the diesplay timeline as per user
@@ -96,106 +64,30 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         if WalkingSpeedViewController.displayTimeline != timeline
         {
             WalkingSpeedViewController.displayTimeline = timeline
-            saveUserSelectedTimeline(timeline)
             self.reloadData()
         }
     }
     
     //
-    // MARK: - Prompt user to change the display timeline
-    //         No need to handle iPad as this app runs on iPhone only
+    // MARK: - Buttons action
     //
+    
+    // Return to the parent view
     @objc
-    func didTapShowButton() {
+    func didTapBackButton() {
         
-        guard !originalData.isEmpty else {
-            showMsg(self,"No data available. Please make sure you authorize the app to have the Walking Speed access right in the Health app")
-
-            return
-        }
-        
-        let vc = UIAlertController(title: "SmoothWalker", message: "Select a Display Option", preferredStyle: .actionSheet)
-        
-        for caseItem in Timeline.allCases {
-            vc.addAction(
-                UIAlertAction(title: caseItem.rawValue, style: .default, handler: { action in
-                
-                self.changeTimeline(caseItem)
-            }))
-           
-        }
-        
-        vc.addAction(
-            UIAlertAction(title: "All Charts", style: .default, handler: {
-                action in
-                let chartVC = WalkingSpeedChartsViewController()
-                chartVC.originalData = self.originalData
-                self.present(chartVC, animated: true, completion: nil)
-            })
-        )
-        
-        vc.addAction( UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        self.present(vc, animated: true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     @objc
     override func didTapFetchButton() {
-            /*
-            guard originalData.isEmpty else {
-            
-                showMsg(self,"You have already fetched data")
-                return
-            }
         
-            fetchMockedData()
-            */
+        // dummy out the superclass function
     }
     
-    // MARK: - Network
-    
-    /// Handle a response fetched from a remote server. This function will also save any HealthKit samples and update the UI accordingly.
-    override func handleServerResponse(_ serverResponse: ServerResponse) {
-        let weeklyReport = serverResponse.weeklyReport
-        var index = 0
-        let addedSamples = weeklyReport.samples.map { (serverHealthSample) -> HKQuantitySample in
-                        
-            // Set the sync identifier and version
-            var metadata = [String: Any]()
-            let sampleSyncIdentifier = String(format: "%@_%@\(index)", weeklyReport.identifier,
-                        serverHealthSample.syncIdentifier
-                )
-            index += 1
-    
-            metadata[HKMetadataKeySyncIdentifier] = sampleSyncIdentifier
-            metadata[HKMetadataKeySyncVersion] = serverHealthSample.syncVersion
-            
-            // Create HKQuantitySample
-            let quantity = HKQuantity(unit: meterPerSecond, doubleValue: serverHealthSample.value / 360.0)
-            let sampleType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!
-            let quantitySample = HKQuantitySample(type: sampleType,
-                                                  quantity: quantity,
-                                                  start: serverHealthSample.startDate,
-                                                  end: serverHealthSample.endDate,
-                                                  metadata: metadata)
-            
-            return quantitySample
-        }
-        
-        HealthData.healthStore.save(addedSamples) { (success, error) in
-           
-            if success {
-                self.originalData = []
-                self.loadData()
-            }
-            else if let error = error {
-                DispatchQueue.main.async {
-                    showMsg(self,"Access Health Store failed (Error: \(error.localizedDescription)). If you have previously denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
-                }
-            }
-        }
-    }
-    
+    //
+    // Xlate data for the provided timeline
+    //
     private func setupDataValuesForTimeline() {
         
         switch (WalkingSpeedViewController.displayTimeline) {
@@ -236,5 +128,4 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             }
         }
     }
-
 }
