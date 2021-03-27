@@ -31,6 +31,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     
     var queries: [HKAnchoredObjectQuery] = []
     
+    var fetchButton : UIBarButtonItem?
+    
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
@@ -74,9 +76,27 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         WalkingSpeedViewController.displayTimeline = .daily
     }
     
+    private func turnOnOffFetchButton(_ turnOn : Bool) {
+        
+        DispatchQueue.main.async {
+            if turnOn {
+                if self.fetchButton == nil {
+                    self.fetchButton = UIBarButtonItem(title: "Fetch", style: .plain, target: self, action: #selector(self.fetchMockedData))
+            
+                    self.navigationItem.rightBarButtonItem = self.fetchButton!
+                }
+            }
+            else if self.fetchButton != nil {
+                self.fetchButton = nil
+                self.navigationItem.rightBarButtonItem = nil
+            }
+        }
+    }
+    
     // MARK: Network
     
     // fetch Mock data and load to Health Store
+    @objc
     private func fetchMockedData() {
         Network.pull() { [weak self] (serverResponse) in
             self?.dateLastUpdated = serverResponse.date
@@ -121,10 +141,43 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             }
             else if let error = error {
                 DispatchQueue.main.async {
-                    showMsg(self,"Access Health Store failed (Error: \(error.localizedDescription)). If you have previously denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
+                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
+                    self.turnOnOffFetchButton(true)
                 }
             }
         }
+    }
+    
+    func showMsgAction( msg : String) {
+        let vc = UIAlertController(title: "SmoothWalker", message: msg, preferredStyle: .alert)
+        
+        vc.addAction( UIAlertAction(title: "OK", style:.cancel, handler: nil))
+        
+        vc.addAction( UIAlertAction(title: "Settings", style: .default, handler: { action in
+            
+            self.openSettings()
+            
+        }))
+        self.present(vc, animated:true, completion: nil)
+    }
+    
+    // direct user to the Settings app
+    private func openSettings() {
+        
+        let url = URL(string:UIApplication.openSettingsURLString)
+        if UIApplication.shared.canOpenURL(url!){
+                // can open succeeded.. opening the url
+            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        }
+        /*
+       guard let url = URL(string: urlString) else {
+          return
+       }
+
+       if UIApplication.shared.canOpenURL(url) {
+           UIApplication.shared.open(url, options: [:])
+       }
+       */
     }
    
     // MARK: - Data Functions
@@ -132,6 +185,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     func loadData() {
         
         self.dataValues = []
+        self.turnOnOffFetchButton(false)
         
         performQuery {
             if !self.dataValues.isEmpty {
@@ -259,6 +313,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         super.collectionView(collectionView, didSelectItemAt: indexPath)
         
         guard !originalData.isEmpty else {
+            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
               return
         }
         
