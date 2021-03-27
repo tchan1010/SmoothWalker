@@ -66,8 +66,8 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
     func getChartHeader(_ row : Int) -> String {
         switch (row) {
         case 0: return "Daily Average Walking Speed"
-        case 1: return "Weekly Average Walkig Speed"
-        default: return "Monhly Average Walking Speed"
+        case 1: return "Weekly Average Walking Speed"
+        default: return "Monthly Average Walking Speed"
         }
     }
     
@@ -75,16 +75,16 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         self.dataTypeIdentifier = dataTypeIdentifier
         self.statisticalValues = values
         
-        /*
         // Update headerView
         chartView.headerView.titleLabel.text = !labels.isEmpty ?
             getChartHeader(row) :
             getDataTypeName(for: dataTypeIdentifier) ?? "Data"
         chartView.headerView.detailLabel.text =
             timeStamp ?? createChartWeeklyDateRangeLabel()
-        */
+        
         // Update graphView
         chartView.applyDefaultConfiguration()
+        
         chartView.graphView.horizontalAxisMarkers = labels.isEmpty ? createHorizontalAxisMarkers() : labels
         
        
@@ -98,22 +98,17 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
             return
         }
          
-        var maxY = 0.0
-        values.forEach { maxY = max(maxY,$0) }
-        maxY = maxY < 1.0 ? 1.0 : round(maxY + 0.8)
-        
-        self.chartView.graphView.yMinimum = 0
-        self.chartView.graphView.yMaximum = CGFloat(maxY)
-        
-        self.chartView.graphView.dataSeries = [
+        chartView.graphView.dataSeries = [
             OCKDataSeries(values: dataPoints, title: unitTitle)
         ]
-            
-        self.chartView.headerView.titleLabel.text = !labels.isEmpty ?
-                self.getChartHeader(row) :
-                getDataTypeName(for: dataTypeIdentifier) ?? "Data"
-        self.chartView.headerView.detailLabel.text =
-                timeStamp ?? createChartWeeklyDateRangeLabel()
-    
+        
+        DispatchQueue.main.async {
+            var maxY = 0.0
+            values.forEach { maxY = max(maxY,$0) }
+            maxY =  maxY < 1.0 ? 1.5 : round(maxY + 0.8)
+        
+            self.chartView.graphView.yMinimum = 0
+            self.chartView.graphView.yMaximum = CGFloat(maxY)
+        }
     }
 }

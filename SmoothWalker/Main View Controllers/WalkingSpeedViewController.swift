@@ -47,12 +47,17 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         
         print("viewWillAppear: dataValues: \(dataValues.count)")
             
+        // hide the Fetch button
+        if let fetchButton = navigationItem.rightBarButtonItem {
+            fetchButton.title = ""
+        }
+        
         // Authorization
         if !dataValues.isEmpty { return }
         
         WalkingSpeedViewController.displayTimeline =  restoreUserSelectedTimeline()
         
-        HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { (success) in
+        HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { [self] (success) in
             if success {
                 print("request HS access successful. originalDate: \(self.originalData.count)...")
                 
@@ -61,10 +66,18 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
                     // Perform the query and reload the data.
                     self.loadData()
                 }
+                else {
+                    self.fetchMockedData()
+                }
             }
-            else {
-                print("request HS access failed...")
-            }
+        }
+    }
+    
+    private func fetchMockedData() {
+        Network.pull() { [weak self] (serverResponse) in
+            self?.dateLastUpdated = serverResponse.date
+            self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
+            self?.handleServerResponse(serverResponse)
         }
     }
     
@@ -96,7 +109,8 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     func didTapShowButton() {
         
         guard !originalData.isEmpty else {
-            showMsg(self,"Walking speed data unavailable. Did you click the Fetch button to load data?")
+            showMsg(self,"No data available. Please make sure you authorize the app to have the Walking Speed access right in the Health app")
+
             return
         }
         
@@ -127,19 +141,15 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     
     @objc
     override func didTapFetchButton() {
-        
-        guard originalData.isEmpty else {
+            /*
+            guard originalData.isEmpty else {
             
-            showMsg(self,"You have already fetched data")
-            return
-        }
-
+                showMsg(self,"You have already fetched data")
+                return
+            }
         
-        Network.pull() { [weak self] (serverResponse) in
-            self?.dateLastUpdated = serverResponse.date
-            self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
-            self?.handleServerResponse(serverResponse)
-        }
+            fetchMockedData()
+            */
     }
     
     // MARK: - Network
@@ -180,7 +190,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             }
             else if let error = error {
                 DispatchQueue.main.async {
-                    showMsg(self,"Access health store failed. Error: \(error.localizedDescription).\nIf you have previously denied the app's access to the Walking Speed category, please authorize the app (read and write) access to that category in the Health app; otherwise please visit the Welcome page and request authorization of all categories, including the Walking Speed")
+                    showMsg(self,"Access Health Store failed (Error: \(error.localizedDescription)). If you have previously denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
                 }
             }
         }
@@ -211,13 +221,12 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         
         super.reloadData()
         
-        
         // Change axis to use weekdays for six-minute walk sample
         DispatchQueue.main.async {
             
             var maxY = 0.0;
             self.dataValues.forEach { maxY = max(maxY,$0.value) }
-            maxY =  maxY < 1.0 ? 1.0 :  round(maxY + 0.8)
+            maxY =  maxY < 1.0 ? 1.5 :  round(maxY + 0.8)
             
             self.chartView.graphView.yMinimum = 0
             self.chartView.graphView.yMaximum = CGFloat(maxY)

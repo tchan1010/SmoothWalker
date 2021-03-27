@@ -13,6 +13,10 @@ class DataTypeCollectionViewController: UIViewController {
     
     static let cellIdentifier = "DataTypeCollectionViewCell"
     
+    // scale factor to fit multiple charts in one screen
+    // This variable is overridden in WalkingSpeedChartsViewController
+    var scaleCellHeight : CGFloat = 1.0
+    
     // MARK: - Properties
     
     lazy var collectionView: UICollectionView = {
@@ -64,7 +68,7 @@ class DataTypeCollectionViewController: UIViewController {
     // MARK: - View Helper Functions
     
     private func setupNavigationController() {
-        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.prefersLargeTitles = false //true
     }
     
     private func setUpViews() {
@@ -124,7 +128,8 @@ class DataTypeCollectionViewController: UIViewController {
         heightInset += navigationController?.navigationBar.bounds.height ?? 0
         heightInset += tabBarController?.tabBar.bounds.height ?? 0
         
-        let cellHeight = isLandscape ? view.bounds.height - heightInset :  view.bounds.width - widthInset
+        let cellHeight = isLandscape ? view.bounds.height - heightInset :
+            view.bounds.width  * scaleCellHeight - widthInset
         
         return cellHeight
     }
