@@ -225,39 +225,39 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         return dataValues
     }
     
-    var currentMonth = -1
-    var startDate : Date?
-    var sum : Double = 0.0
+    var xlateMap = [String:Double]()
     
-    for index in 0..<rawData.count {
-        let item = rawData[index]
-        let (year,month,_) = extractDate(item.startDate)
-        if currentMonth == -1 {
-            currentMonth = month
-            addPlaceholderData(year,month-1,1,-1,&dataValues)
+    rawData.forEach {
+        let (year,month,_) = extractDate($0.startDate)
+        let key = "\(year)-\(month)"
+        if let value = xlateMap[key] {
+            xlateMap[key] = value + $0.value
         }
-        else if currentMonth != month {
-            if startDate != nil {
-                let endDate = composeDate(year,currentMonth,-1)
-                let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(currentMonth,year)))
-                dataValues.append(data)
-            }
-            sum = 0.0
-            startDate = nil
-            currentMonth = month
+        else {
+            xlateMap[key] = $0.value
         }
-        if (startDate == nil) {
-            startDate = composeDate(year,month,1)
-        }
-        sum += item.value
     }
-    if startDate != nil {
-        let (year,month,_) = extractDate(startDate!)
-        let endDate = composeDate(year,month,-1)
-        let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(month,year)))
-        dataValues.append(data)
-        addPlaceholderData(year,month+1,1,-1,&dataValues)
+    
+    for (key,sum) in xlateMap {
+        let timeStamp = key.components(separatedBy: "-")
+        if let year = Int(timeStamp[0]),
+           let month = Int(timeStamp[1])
+        {
+            let startDate = composeDate(year,month,1)
+            let endDate = composeDate(year,month,-1)
+            let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(month,year)))
+            dataValues.append(data)
+        }
     }
+    if (dataValues.count == 1) {
+        var tmp = [HealthDataTypeValue]()
+        let (year,month,_) = extractDate(dataValues.first!.startDate)
+        addPlaceholderData(year,month-1,1,-1,&tmp)
+        tmp.append(dataValues.first!)
+        addPlaceholderData(year,month+1,1,-1,&tmp)
+        return tmp
+    }
+    dataValues.sort{ $0.startDate < $1.startDate }
     return dataValues
 }
 
