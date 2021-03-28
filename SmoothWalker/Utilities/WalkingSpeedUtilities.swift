@@ -11,6 +11,10 @@ import Foundation
 import HealthKit
 
 //
+// This file contains utility functions and data to support
+// the gathering and display of daily, weekly and monthly
+// walking speed charts and tables.
+//
 // -------------------------------------------------------------------------
 // Walking speed HKUnit
 //
@@ -29,18 +33,19 @@ enum Timeline : String, CaseIterable  {
 
 //
 // -------------------------------------------------------------------------
-//  Utilities constants and functions for date processing
-//
 
+//
+//  Calendar month titles
+//
 let monthTitles = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 //
-// Maximum days of each calendar month, leap year is checked in maxDaysOfMonth()
+// Maximum days of each calendar month (leap year is handled separately)
 //
 fileprivate let daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 //
-// Extract month, day and year from a given Date object
+// Extract month, day and year from a given date
 //
 func extractDate(_ inDate : Date ) -> (year : Int, month : Int, day : Int)
 {
@@ -56,18 +61,16 @@ func extractDate(_ inDate : Date ) -> (year : Int, month : Int, day : Int)
 }
 
 //
-// Check if a given year is a leap year
+// Check a given year is a leap year
 //
 private func leapYear(_ year : Int) -> Bool {
 
-    if year % 400 == 0 {
-        return true
-    }
-    return year % 100 != 0 && year % 4 == 0 ? true : false
+    return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0)
+                ? true : false
 }
 
 //
-// Return the max days of the given month, take into account of leap year
+// Return the max days of a given month, take into account of leap year
 //
 func maxDaysOfMonth(_ month : Int, _ year : Int) -> Int {
 
@@ -90,7 +93,7 @@ func composeDate(_ year : Int, _ month : Int, _ day : Int) -> Date?
 // the offset can be a positive or negative number
 //
 func composeOffsetDate(_ year : Int, _ month : Int,
-                       _ day : Int,_ offset : Int) -> Date?
+                       _ day : Int,  _ offset : Int) -> Date?
 {
     var newDay = day + offset
 
@@ -117,15 +120,16 @@ func composeOffsetDate(_ year : Int, _ month : Int,
 
 //
 // -------------------------------------------------------------------------
-// Utility functions to translate weekly and monthly walking speed from daily
-// walking speed data
+// Utility functions to compose weekly and monthly walking speed data
+// from the daily walking speed data
 //
 
 //
-// Add a dummy data value for weekly or monthly averago
+// Add a dummy data record for weekly and monthly charts
 //
-private func addPlaceholderData(_ year : Int,_ month : Int,
-    _ day : Int, _ offset : Int, _ dataValues : inout [HealthDataTypeValue])
+private func addPlaceholderData(_ year : Int, _ month : Int,
+                                _ day : Int,  _ offset : Int,
+                          _ dataValues : inout [HealthDataTypeValue])
 {
     if (month >= 1 && month <= 12) {
         if let date = composeDate(year,month,day),
@@ -136,85 +140,78 @@ private func addPlaceholderData(_ year : Int,_ month : Int,
     }
 }
 
-/*
-private func dateInRange(_ first : Date,_ last : Date,_ target : Date) -> Bool
+//
+// Check a data is in the weekly range of any bucket, and update value
+//
+private func findAddItemValue(_ data : HealthDataTypeValue,_ dataValues : inout [HealthDataTypeValue]) -> Bool
 {
-    let (firstYear,firstMonth,firstDay) = extractDate(first)
-    let (lastYear,lastMonth,lastDay) = extractDate(last)
-    let (nowYear,nowMonth,nowDay) = extractDate(target)
-    return firstYear == nowYear && firstMonth == nowMonth && nowDay >= firstDay
-           && lastYear == nowYear && lastMonth == nowMonth && nowDay <= lastDay
+    for (pos,item) in dataValues.enumerated().reversed() {
+        
+        if  data.startDate >= item.startDate &&
+            data.startDate <= item.endDate
+        {
+            dataValues[pos].value += data.value / 7.0
+            return true
+        }
+    }
+    return false
 }
-*/
 
 //
-// xlate daily walking speed data to weekly walking speed
+// Translate daily walking speed data to weekly walking speed data
 //
 func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataTypeValue]
 {
     var dataValues = [HealthDataTypeValue]()
     
-    guard !rawData.isEmpty else {
-        return dataValues
-    }
-    
     let calendar: Calendar = .current
     
     rawData.forEach {
     
-        var i = dataValues.count - 1
-        while i >= 0 {
-            if  $0.startDate >= dataValues[i].startDate &&
-                $0.startDate <= dataValues[i].endDate
-            {
-                dataValues[i].value += $0.value
-                break
-            }
-            i -= 1
-        }
-        if i < 0 { // create a new week bucket
+        if !findAddItemValue($0,&dataValues) {
+            
+            // create a new bucket for a calendar week
+            
             let (year,month,day) = extractDate($0.startDate)
+          
             let weekday = calendar.component(.weekday, from: $0.startDate)
+            
             let firstWeekDate = composeOffsetDate(year,month,day,-weekday+1)!
+            
             let lastWeekDate = composeOffsetDate(year,month,day,7-weekday)!
-            let data = HealthDataTypeValue(startDate: firstWeekDate, endDate: lastWeekDate, value: $0.value)
+            
+            let data = HealthDataTypeValue(startDate: firstWeekDate, endDate: lastWeekDate, value: $0.value / 7.0)
+            
             dataValues.append(data)
         }
     }
     
-    for i in 0..<dataValues.count {
-        dataValues[i].value /= 7.0
-    }
-    
-    if !dataValues.isEmpty {
+    // Optional: make the chart looks pretty
+    if !dataValues.isEmpty && dataValues.count <= 2 {
         
         dataValues.sort{ $0.startDate < $1.startDate }
         
-        // add a dummy week record at the start of list
+        // add a dummy week at the start of list
         var placeholder = [HealthDataTypeValue]()
         let (year,month,day) = extractDate(dataValues.first!.startDate)
         addPlaceholderData(year,month,day-7,6,&placeholder)
-        dataValues.insert(placeholder.first!, at:0)
+        dataValues = placeholder + dataValues
         
-        // add a dummy week record at the end of list
+        // add a dummy week at the end of list
         let (year2,month2,day2) = extractDate(dataValues.last!.endDate)
-        addPlaceholderData(year2,month2,day2+1,7,&dataValues)
+        addPlaceholderData(year2,month2,day2+1,6,&dataValues)
     }
     
     return dataValues
 }
 
 //
-// Translate daily walking speed data to monthly walking speed
+// Translate daily walking speed data to monthly walking speed data
 //
 func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
                [HealthDataTypeValue]
 {
     var dataValues = [HealthDataTypeValue]()
-    
-    guard !rawData.isEmpty else {
-        return dataValues
-    }
     
     var xlateMap = [String:Double]()
     
@@ -240,6 +237,10 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
             dataValues.append(data)
         }
     }
+    
+    // Optional: add dummy month records before and after to make
+    // the chart looks pretty
+    
     if (dataValues.count == 1) {
         var tmp = [HealthDataTypeValue]()
         let (year,month,_) = extractDate(dataValues.first!.startDate)
@@ -248,21 +249,20 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         addPlaceholderData(year,month+1,1,-1,&tmp)
         return tmp
     }
-    dataValues.sort{ $0.startDate < $1.startDate }
+    
     return dataValues
 }
 
 //
 // -------------------------------------------------------------------------
-// Misc
 //
-
-// show a message dialog
-func showMsg(_ caller : UIViewController, _ msg : String) {
-    
-    let alert = UIAlertController(title: "SmoothWalker", message: msg, preferredStyle: .alert)
-    
-    alert.addAction( UIAlertAction(title: "OK", style: .cancel, handler: nil) )
-    
-    caller.present(alert, animated: true, completion: nil)
+// Compute the nearest value higher than the given target value
+//
+func computeMaxValue(_ targetValue : Double, _ incr : Double) -> CGFloat
+{
+    var result = incr
+    while (result <= targetValue) {
+        result += incr
+    }
+    return CGFloat(result)
 }

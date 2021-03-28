@@ -96,7 +96,7 @@ class DataTableViewController: UITableViewController {
         switch (WalkingSpeedViewController.displayTimeline) {
         case .weekly:
             let dateFormatter2 = DateFormatter()
-            dateFormatter2.dateFormat = "MM/dd/YY"
+            dateFormatter2.dateFormat = "M/d/YY"
             cell.detailTextLabel?.text = dateFormatter2.string(from:dataValue.startDate)
                 + " - " + dateFormatter2.string(from:dataValue.endDate)
         case .monthly:

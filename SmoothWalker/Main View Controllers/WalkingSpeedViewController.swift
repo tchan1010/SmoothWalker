@@ -9,6 +9,12 @@
 import UIKit
 import HealthKit
 
+//
+// Class to display a detailed chart for daily, weekly or monthly
+// average walking speed. This class is instantiated by the
+// WalkingSpeedChartsViewController class
+//
+
 class WalkingSpeedViewController: HealthQueryTableViewController {
     
     /// The date from the latest server response.
@@ -33,7 +39,6 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
     
     // MARK: - View Life Cycle Overrides
     
@@ -110,17 +115,20 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             originalData = dataValues
         }
         setupDataValuesForTimeline()
-        
+       
         super.reloadData()
+        
+        //dataValues = saveDataValues
         
         // Change axis to use weekdays for six-minute walk sample
         DispatchQueue.main.async {
             
-            // set the Y-axis maximum value
-            var maxY = 1.5
-            self.dataValues.forEach{ maxY = max(maxY,$0.value) }
-            //self.chartView.graphView.yMinimum = 0
-            self.chartView.graphView.yMaximum = round(CGFloat(maxY + 0.8))
+            // Enable display of fractional digits
+            self.chartView.graphView.numberFormatter.maximumFractionDigits = 2
+            
+            // Compute and set the Y-axis maximum
+            let maxY = self.dataValues.reduce(0.0, { max($0, $1.value) })
+            self.chartView.graphView.yMaximum = computeMaxValue(maxY,0.25)
             
             if let dateLastUpdated = self.dateLastUpdated {
                 self.chartView.headerView.detailLabel.text = createChartDateLastUpdatedLabel(dateLastUpdated)

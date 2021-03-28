@@ -44,7 +44,7 @@ func createChartWeeklyDateRangeLabel(lastDate: Date = Date()) -> String {
 private func createMonthDayDateFormatter() -> DateFormatter {
     let dateFormatter = DateFormatter()
     
-    dateFormatter.dateFormat = "MM/dd"
+    dateFormatter.dateFormat = "M/d"
     
     return dateFormatter
 }
@@ -98,5 +98,14 @@ func createHorizontalAxisMarkers(for dates: [Date]) -> [String] {
     
     let dateFormatter = createMonthDayDateFormatter()
     
-    return dates.map { dateFormatter.string(from: $0) }
+    if WalkingSpeedViewController.displayTimeline == .weekly {
+       
+        return dates.map{
+            let (year,month,day) = extractDate($0)
+            return dateFormatter.string(from:$0) + "-" +
+                dateFormatter.string(from:composeOffsetDate(year,month,day,6)!)
+        }
+    }
+    
+    return dates.map { dateFormatter.string(from:$0) }
 }

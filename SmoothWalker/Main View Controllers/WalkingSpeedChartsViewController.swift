@@ -10,8 +10,8 @@ import UIKit
 import HealthKit
 
 //
-// class to display daily, weekly and monthly average walking speed charts
-// all in one view
+// Class to display the daily, weekly and monthly average walking
+// speed charts in one view
 //
 class WalkingSpeedChartsViewController: DataTypeCollectionViewController
 {
@@ -59,7 +59,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             if success {
                 
                 if !self.originalData.isEmpty {
-                    //self.originalData = []
                     // Perform the query and reload the data.
                     self.loadData()
                 }
@@ -95,7 +94,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     
     // MARK: Network
     
-    // fetch Mock data and load to Health Store
+    // fetch Mock data and load to Health store
     @objc
     private func fetchMockedData() {
         Network.pull() { [weak self] (serverResponse) in
@@ -141,7 +140,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             }
             else if let error = error {
                 DispatchQueue.main.async {
-                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
+                    self.showMsgAction(msg:"Access Health store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
                     self.turnOnOffFetchButton(true)
                 }
             }
@@ -169,15 +168,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 // can open succeeded.. opening the url
             UIApplication.shared.open(url!, options: [:], completionHandler: nil)
         }
-        /*
-       guard let url = URL(string: urlString) else {
-          return
-       }
-
-       if UIApplication.shared.canOpenURL(url) {
-           UIApplication.shared.open(url, options: [:])
-       }
-       */
     }
    
     // MARK: - Data Functions
@@ -191,7 +181,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             if !self.dataValues.isEmpty {
                 self.originalData = self.dataValues
                 self.setupChartsData {
-                    // Dispatch UI updates to the main thread.
+                    // Dispatch UI updates in the main thread.
                     DispatchQueue.main.async { [weak self] in
                         self?.reloadData()
                     }
@@ -202,55 +192,60 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
 
     //
     // Collect data for daily average walking speed
+    // caller has checked originalData contains data
     //
-    private func setupDailyDataValues() -> ([Double], [String], String)
+    private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
+                                      _ timeStamp : inout String)
     {
-        guard !originalData.isEmpty else {
-            return ( [], [], "" )
-        }
-       
         let (year,month,day) = extractDate(originalData.first!.startDate)
+        
         let (year2,month2,day2) = extractDate(originalData.last!.endDate)
-        let timeStamp = monthTitles[month-1] + " \(day)" +
+        
+        timeStamp = monthTitles[month-1] + " \(day)" +
                (year == year2 ? "" : ", \(year)") + " - " +
                 monthTitles[month2-1] + " \(day2), \(year)"
-        let values = originalData.map{ $0.value }
-        let labels : [String] = originalData.map {
+        
+        dataItem.values = originalData.map{ $0.value }
+        
+        dataItem.labels = originalData.map{
             let (_,month,day) = extractDate($0.startDate)
-            return "\(month)/\(day)"
-        }
-        return (values, labels, timeStamp)
+            return "\(month)/\(day)" }
     }
     
     //
     // Collect data for weekly average walking speed
     //
-    private func setupWeeklyDataValues() -> ([Double], [String]) {
-       
+    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
+                                       _ timeStamp :  String)
+    {
         let dataValues = xlateWeeklyDataValues(originalData)
-        let values : [Double] = dataValues.map{ $0.value }
-        let labels : [String] = dataValues.map{
-            let (_,month,day) = extractDate($0.startDate)
-            return "\(month)/\(day)"
-        }
-        return (values,labels)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "M/d"
+        
+        dataItem.values = dataValues.map { $0.value }
+        dataItem.labels = dataValues.map{
+                      dateFormatter.string(from:$0.startDate) + "-" +
+                        dateFormatter.string(from:$0.endDate) }
+        dataItem.timeStamp = timeStamp
     }
     
     //
     // Collect data for monthly average walking speed
     //
-    private func setupMonthlyDataValues() -> ([Double], [String])
+    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
+                                        _ timeStamp :  String)
     {
         let dataValues = xlateMonthlyDataValues(originalData)
-        let values : [Double] = dataValues.map{ $0.value }
-        let labels : [String] = dataValues.map{
-            monthTitles[extractDate($0.startDate).month-1]
-        }
-        return (values,labels)
+        
+        dataItem.values = dataValues.map{ $0.value }
+        dataItem.labels = dataValues.map{
+                    monthTitles[extractDate($0.startDate).month-1]}
+        dataItem.timeStamp = timeStamp
     }
     
     //
-    // Collect data for charts
+    // Collect data from Health store
     //
     func performQuery(completion: @escaping () -> Void) {
         guard let sampleType = getSampleType(for: dataTypeIdentifier) else { return }
@@ -282,34 +277,28 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         HealthData.healthStore.execute(anchoredObjectQuery)
     }
     
-    // strip off hr;min:sec from the provided date
+    // Override the hr:min:sec in the provided date
+    // to facilitate the xlation of daily data to weekly date
+    //
     func simpleDate(_ old : Date) -> Date {
         let (year,month,day) = extractDate(old)
         return composeDate(year,month,day)!
     }
     
+    // Collect data, labels and time stamp for
+    // daily, weekly and monthly charts
+    //
     func setupChartsData( completion : @escaping () -> Void) {
-        var timeStamp : String = ""
-        for index in 0..<data.count {
-            switch (index) {
-            case 0: // for daily walking speed chart
-                let (values,labels,ts) = setupDailyDataValues()
-                self.data[index].values = values
-                self.data[index].labels = labels
-                self.data[index].timeStamp = ts
-                timeStamp = ts
-            case 1: // for weekly walking speed chart
-                let (values,labels) = setupWeeklyDataValues()
-                self.data[index].values = values
-                self.data[index].labels = labels
-                self.data[index].timeStamp = timeStamp
-            default: // for monthly walking speed chart
-                let (values,labels) = setupMonthlyDataValues()
-                self.data[index].values = values
-                self.data[index].labels = labels
-                self.data[index].timeStamp = timeStamp
-            }
+     
+        if  !originalData.isEmpty  {
+            
+            var timeStamp : String = ""
+       
+            setupDailyDataValues(&data[0],&timeStamp)
+            setupWeeklyDataValues(&data[1],timeStamp)
+            setupMonthlyDataValues(&data[2],timeStamp)
         }
+
         completion()
     }
     
@@ -320,9 +309,12 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         super.collectionView(collectionView, didSelectItemAt: indexPath)
         
         guard !originalData.isEmpty else {
-            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
+            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
               return
         }
+        
+        // Show a detailed chart view (chart and table)
+        // per user selection
         
         let detailedView = WalkingSpeedViewController()
         detailedView.dataValues = originalData
