@@ -141,7 +141,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             }
             else if let error = error {
                 DispatchQueue.main.async {
-                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
+                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app.")
                     self.turnOnOffFetchButton(true)
                 }
             }
@@ -313,7 +313,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         super.collectionView(collectionView, didSelectItemAt: indexPath)
         
         guard !originalData.isEmpty else {
-            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health Store's Walking Speed data, please authorize the app access to that category in the Health app; otherwise please visit the Welcome page and allow authorization of all categories, including the Walking Speed")
+            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
               return
         }
         

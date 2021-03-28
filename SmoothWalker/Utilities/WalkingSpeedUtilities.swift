@@ -27,28 +27,6 @@ enum Timeline : String, CaseIterable  {
     case monthly = "Monthly"
 }
 
-fileprivate let DISPLAY_TIMELINE = "DisplayTimeLine"
-
-//
-// save user-selected display timeline for walking speed
-//
-func saveUserSelectedTimeline(_ timeline : Timeline) {
-    
-    UserDefaults.standard.set(timeline.rawValue, forKey:DISPLAY_TIMELINE)
-}
-
-//
-// restore any user-selected display timeline for walking speed
-//
-func restoreUserSelectedTimeline() -> Timeline {
-    
-    /* restore the last user-selected display timeline */
-    if let strTimeline = UserDefaults.standard.string(forKey:DISPLAY_TIMELINE) {
-        return Timeline(rawValue: strTimeline) ?? .daily
-    }
-    return .daily
-}
-
 //
 // -------------------------------------------------------------------------
 //  Utilities constants and functions for date processing

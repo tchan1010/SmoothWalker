@@ -87,9 +87,20 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         
         chartView.graphView.horizontalAxisMarkers = labels.isEmpty ? createHorizontalAxisMarkers() : labels
         
-       
+        var maxY : CGFloat = 4.0
         // Update graphView dataSeries
-        let dataPoints: [CGFloat] = statisticalValues.map { CGFloat($0) }
+        var dataPoints: [CGFloat] = statisticalValues.map { CGFloat($0) }
+
+        if !dataPoints.isEmpty {
+           var duplicate = dataPoints
+           duplicate.sort{ $0 > $1 }
+           maxY = duplicate.first!
+           if maxY <= 1.0  {
+              dataPoints = dataPoints.map { $0 * CGFloat(10.0) }
+              maxY *= 10.0
+              chartView.headerView.detailLabel.text! += " (Y-axis scaled by 1/10)"
+           }
+        }
         
         guard
             let unit = preferredUnit(for: dataTypeIdentifier),
@@ -103,12 +114,14 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         ]
         
         DispatchQueue.main.async {
+            /*
             var maxY = 0.0
             values.forEach { maxY = max(maxY,$0) }
             maxY =  maxY < 1.0 ? 1.5 : round(maxY + 0.8)
+            */
         
             self.chartView.graphView.yMinimum = 0
-            self.chartView.graphView.yMaximum = CGFloat(maxY)
+            self.chartView.graphView.yMaximum = CGFloat(round(maxY + 0.8))
         }
     }
 }
