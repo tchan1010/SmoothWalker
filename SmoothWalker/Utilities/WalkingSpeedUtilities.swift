@@ -136,6 +136,17 @@ private func addPlaceholderData(_ year : Int,_ month : Int,
     }
 }
 
+/*
+private func dateInRange(_ first : Date,_ last : Date,_ target : Date) -> Bool
+{
+    let (firstYear,firstMonth,firstDay) = extractDate(first)
+    let (lastYear,lastMonth,lastDay) = extractDate(last)
+    let (nowYear,nowMonth,nowDay) = extractDate(target)
+    return firstYear == nowYear && firstMonth == nowMonth && nowDay >= firstDay
+           && lastYear == nowYear && lastMonth == nowMonth && nowDay <= lastDay
+}
+*/
+
 //
 // xlate daily walking speed data to weekly walking speed
 //
@@ -146,48 +157,50 @@ func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataType
     guard !rawData.isEmpty else {
         return dataValues
     }
-   
-    let calendar: Calendar = .current
-    let firstDate = rawData.first!.startDate
-    var weekday = calendar.component(.weekday, from: firstDate)
-    var startDate : Date?
-    var earliestDate : Date?
-    var endDate : Date?
-    var sum : Double = 0.0
     
-    for index in 0..<rawData.count {
-        let item = rawData[index]
-        let (year,month,day) = extractDate(item.startDate)
-        if (startDate == nil) {
-            startDate = composeOffsetDate(year,month,day,-weekday)
-            if earliestDate == nil {
-                earliestDate = startDate
-                let (year2,month2,day2) = extractDate(startDate!)
-                if (day2 > 7) {
-                    addPlaceholderData(year2,month2,day2-7,6,&dataValues)
-                }
+    let calendar: Calendar = .current
+    
+    rawData.forEach {
+    
+        var i = dataValues.count - 1
+        while i >= 0 {
+            if  $0.startDate >= dataValues[i].startDate &&
+                $0.startDate <= dataValues[i].endDate
+            {
+                dataValues[i].value += $0.value
+                break
             }
+            i -= 1
         }
-        sum += item.value
-        endDate = item.endDate
-        weekday += 1
-        if weekday >= 7 {
-            weekday = 0
-            let data = HealthDataTypeValue(startDate:startDate!, endDate:item.endDate,value:sum/7.0)
+        if i < 0 { // create a new week bucket
+            let (year,month,day) = extractDate($0.startDate)
+            let weekday = calendar.component(.weekday, from: $0.startDate)
+            let firstWeekDate = composeOffsetDate(year,month,day,-weekday+1)!
+            let lastWeekDate = composeOffsetDate(year,month,day,7-weekday)!
+            let data = HealthDataTypeValue(startDate: firstWeekDate, endDate: lastWeekDate, value: $0.value)
             dataValues.append(data)
-            sum = 0.0
-            startDate = nil
         }
     }
-    if startDate != nil {
-        let offset = 7 - weekday
-        let (year,month,day) = extractDate(endDate!)
-        endDate = composeOffsetDate(year,month,day,offset)
-        let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/7.0)
-        dataValues.append(data)
-        let (year2,month2,day2) = extractDate(endDate!)
+    
+    for i in 0..<dataValues.count {
+        dataValues[i].value /= 7.0
+    }
+    
+    if !dataValues.isEmpty {
+        
+        dataValues.sort{ $0.startDate < $1.startDate }
+        
+        // add a dummy week record at the start of list
+        var placeholder = [HealthDataTypeValue]()
+        let (year,month,day) = extractDate(dataValues.first!.startDate)
+        addPlaceholderData(year,month,day-7,6,&placeholder)
+        dataValues.insert(placeholder.first!, at:0)
+        
+        // add a dummy week record at the end of list
+        let (year2,month2,day2) = extractDate(dataValues.last!.endDate)
         addPlaceholderData(year2,month2,day2+1,7,&dataValues)
     }
+    
     return dataValues
 }
 
@@ -244,6 +257,7 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
 // Misc
 //
 
+// show a message dialog
 func showMsg(_ caller : UIViewController, _ msg : String) {
     
     let alert = UIAlertController(title: "SmoothWalker", message: msg, preferredStyle: .alert)

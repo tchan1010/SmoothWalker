@@ -111,35 +111,20 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         }
         setupDataValuesForTimeline()
         
-        /*
-        var suffix = ""
-        var duplicate = dataValues.map{ $0.value }
-        duplicate.sort{ $0 > $1 }
-        var maxY = duplicate.first!
-        if maxY <= 1.0 {
-            maxY *= 10.0
-            dataValues = dataValues.map{ HealthDataTypeValue(startDate: $0.startDate, endDate: $0.endDate, value: $0.value * 10.0) }
-            suffix = ". (Y-axis scaled by 1/10)"
-        }
-        */
-        
         super.reloadData()
         
         // Change axis to use weekdays for six-minute walk sample
         DispatchQueue.main.async {
             
-            var duplicate = self.dataValues.map{ $0.value }
-            duplicate.sort{ $0 > $1 }
-            let maxY = max(1.5,duplicate.first ?? 0.0)
-            
-            self.chartView.graphView.yMinimum = 0
+            // set the Y-axis maximum value
+            var maxY = 1.5
+            self.dataValues.forEach{ maxY = max(maxY,$0.value) }
+            //self.chartView.graphView.yMinimum = 0
             self.chartView.graphView.yMaximum = round(CGFloat(maxY + 0.8))
             
             if let dateLastUpdated = self.dateLastUpdated {
                 self.chartView.headerView.detailLabel.text = createChartDateLastUpdatedLabel(dateLastUpdated)
             }
-            //self.chartView.headerView.detailLabel.text! += suffix
-            
         }
     }
 }

@@ -141,7 +141,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             }
             else if let error = error {
                 DispatchQueue.main.async {
-                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app.")
+                    self.showMsgAction(msg:"Access Health Store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health Store's Walking Speed data, please authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
                     self.turnOnOffFetchButton(true)
                 }
             }
@@ -264,8 +264,9 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             guard let samples = samplesOrNil else { return }
             
             self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
-                var dataValue = HealthDataTypeValue(startDate: sample.startDate,
-                    endDate: sample.endDate,
+                var dataValue = HealthDataTypeValue(
+                    startDate: self.simpleDate(sample.startDate),
+                    endDate: self.simpleDate(sample.endDate),
                     value: .zero)
                 if let quantitySample = sample as? HKQuantitySample,
                    let unit = preferredUnit(for: quantitySample) {
@@ -279,6 +280,12 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         }
         
         HealthData.healthStore.execute(anchoredObjectQuery)
+    }
+    
+    // strip off hr;min:sec from the provided date
+    func simpleDate(_ old : Date) -> Date {
+        let (year,month,day) = extractDate(old)
+        return composeDate(year,month,day)!
     }
     
     func setupChartsData( completion : @escaping () -> Void) {
