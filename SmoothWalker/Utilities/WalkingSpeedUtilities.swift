@@ -230,9 +230,7 @@ func getWeeklyTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String?
             if startDate == nil {
                 startDate = $0.startDate
             }
-            else {
-                endDate = $0.endDate
-            }
+            endDate = $0.endDate
         }
     }
     if startDate != nil && endDate != nil {
