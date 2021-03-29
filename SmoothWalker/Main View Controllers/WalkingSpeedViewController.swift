@@ -55,8 +55,8 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         }
      
         //
-        // Caller has setup dataValues and displayTimeline
-        // Noew show the chart and detailed table
+        // Caller has setup the dataValues and displayTimeline
+        // Show the chart and table
         //
         self.reloadData()
     }
