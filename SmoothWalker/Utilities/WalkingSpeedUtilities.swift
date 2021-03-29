@@ -158,20 +158,6 @@ private func findAddItemValue(_ data : HealthDataTypeValue,_ dataValues : inout 
 }
 
 //
-// Create a date range time stamp for daily average walking speed chart
-//
-func getDailyTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String
-{
-    let (year,month,day) = extractDate(dataValues.first!.startDate)
-    
-    let (year2,month2,day2) = extractDate(dataValues.last!.endDate)
-    
-    return monthTitles[month-1] + " \(day)" +
-           (year == year2 ? "" : ", \(year)") + " - " +
-            monthTitles[month2-1] + " \(day2), \(year)"
-}
-
-//
 // Translate daily walking speed data to weekly walking speed data
 //
 func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataTypeValue]
@@ -220,9 +206,9 @@ func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataType
 }
 
 //
-// Create a date range time stamp for weekly average walking speed chart
+// Create a date range time stamp for all charts
 //
-func getWeeklyTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String?
+func getChartTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String?
 {
     var startDate, endDate : Date?
     dataValues.forEach {
@@ -238,7 +224,7 @@ func getWeeklyTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String?
         let (year2,month2,day2) = extractDate(endDate!)
         return monthTitles[month-1] + " \(day)" +
                (year == year2 ? "" : ", \(year)") + " - " +
-                monthTitles[month2-1] + " \(day2), \(year)"
+            (month == month2 && year == year2 ? "" : monthTitles[month2-1] + " ") + "\(day2), \(year)"
     }
     return nil
 }
@@ -289,37 +275,6 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
     }
     
     return dataValues
-}
-
-//
-// Create a date range time stamp for monthly average walking speed chart
-//
-func getMonthlyTimeStamp(_ dataValues : [HealthDataTypeValue]) -> String?
-{
-    var startDate, endDate : Date?
-    dataValues.forEach {
-        if $0.value > 0.0 {
-            if startDate == nil {
-                startDate = $0.startDate
-            }
-            endDate = $0.endDate
-        }
-    }
-    if startDate != nil && endDate != nil {
-        let (year,month,day) = extractDate(startDate!)
-        let (year2,month2,day2) = extractDate(endDate!)
-        if (year == year2 && month == month2) {
-            return monthTitles[month-1] +
-                " \(day) - \(day2), \(year)"
-        }
-        else {
-           return monthTitles[month-1] +
-            " \(day)" + (year == year2 ? "" : ", \(year)") +
-                " - " + monthTitles[month2-1] +
-                " \(day2), \(year2)"
-        }
-    }
-    return nil
 }
 
 //

@@ -87,16 +87,14 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         switch (WalkingSpeedViewController.displayTimeline) {
         case .daily:
             dataValues = originalData
-            timeStamp = getDailyTimeStamp(originalData)
         case .weekly:
             dataValues = xlateWeeklyDataValues(originalData)
-            timeStamp = getWeeklyTimeStamp(dataValues)
             break
         case .monthly:
             dataValues = xlateMonthlyDataValues(originalData)
-            timeStamp = getMonthlyTimeStamp(dataValues)
             break;
         }
+        timeStamp = getChartTimeStamp(originalData)
     }
     
     // MARK: Function Overrides

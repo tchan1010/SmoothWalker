@@ -194,7 +194,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp : inout String)
     {
-        timeStamp = getDailyTimeStamp(originalData)
+        timeStamp = getChartTimeStamp(originalData)!
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
                (
@@ -216,7 +216,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/d"
         
-        let timeStamp2 = getWeeklyTimeStamp(dataValues) ?? timeStamp
+        let timeStamp2 = getChartTimeStamp(dataValues) ?? timeStamp
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
             (
@@ -235,7 +235,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     {
         let dataValues = xlateMonthlyDataValues(originalData)
         
-        let timeStamp2 = getMonthlyTimeStamp(dataValues) ?? timeStamp
+        let timeStamp2 = getChartTimeStamp(dataValues) ?? timeStamp
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
              (
