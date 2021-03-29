@@ -99,7 +99,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     private func fetchMockedData() {
         Network.pull() { [weak self] (serverResponse) in
             self?.dateLastUpdated = serverResponse.date
-            self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
+            self?.queryPredicate = createLastWeekPredicate(from:   serverResponse.date)
             self?.handleServerResponse(serverResponse)
         }
     }
