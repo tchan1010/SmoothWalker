@@ -16,8 +16,7 @@ Run the following commands on a Mac computer:
 
 1  git clone https://github.com/tchan1010/SmoothWalker.git
 2. cd SmoothWalker
-3. git checkout depictWalkingSpeed (or
-   git checkout depictLatestWalkingSpeed)
+3. git checkout depictLatestWalkingSpeed
 4. Run Xcode on the SmoothWalker.xcodeproj file
 5. Install the app onto your iPhone via Xcode
 
