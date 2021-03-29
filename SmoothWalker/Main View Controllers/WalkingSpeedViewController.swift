@@ -94,7 +94,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             dataValues = xlateMonthlyDataValues(originalData)
             break;
         }
-        timeStamp = getChartTimeStamp(originalData)
+        timeStamp = getChartTimeStamp(dataValues)
     }
     
     // MARK: Function Overrides
