@@ -116,7 +116,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             
             // Compute and set the Y-axis maximum
             let maxY = self.dataValues.reduce(0.0, { max($0, $1.value) })
-            self.chartView.graphView.yMaximum = computeMaxValue(maxY,0.25)
+            self.chartView.graphView.yMaximum = computeMaxValue(maxY)
             
             self.chartView.headerView.detailLabel.text = self.timeStamp ??
                 createChartDateLastUpdatedLabel(self.dateLastUpdated ?? Date())

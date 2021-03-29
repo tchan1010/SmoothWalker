@@ -107,7 +107,7 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
             
             // Compute and set the Y-axis maximum value
             let maxY = dataPoints.reduce(0.0, { max($0, $1) })
-            self.chartView.graphView.yMaximum =  computeMaxValue(Double(maxY),0.25)
+            self.chartView.graphView.yMaximum =  computeMaxValue(Double(maxY))
         }
     }
 }
