@@ -107,15 +107,13 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     /// Handle a response fetched from a remote server. This function will also save any HealthKit samples and update the UI accordingly.
     private func handleServerResponse(_ serverResponse: ServerResponse) {
         let weeklyReport = serverResponse.weeklyReport
-        var index = 0
         let addedSamples = weeklyReport.samples.map { (serverHealthSample) -> HKQuantitySample in
                         
             // Set the sync identifier and version
             var metadata = [String: Any]()
-            let sampleSyncIdentifier = String(format: "%@_%@\(index)", weeklyReport.identifier,
+            let sampleSyncIdentifier = String(format: "%@_%@", weeklyReport.identifier,
                         serverHealthSample.syncIdentifier
                 )
-            index += 1
     
             metadata[HKMetadataKeySyncIdentifier] = sampleSyncIdentifier
             metadata[HKMetadataKeySyncVersion] = serverHealthSample.syncVersion
@@ -123,6 +121,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             // Create HKQuantitySample
             let quantity = HKQuantity(unit: meterPerSecond, doubleValue: serverHealthSample.value / 360.0)
             let sampleType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!
+            
             let quantitySample = HKQuantitySample(type: sampleType,
                                                   quantity: quantity,
                                                   start: serverHealthSample.startDate,
@@ -195,13 +194,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp : inout String)
     {
-        let (year,month,day) = extractDate(originalData.first!.startDate)
-        
-        let (year2,month2,day2) = extractDate(originalData.last!.endDate)
-        
-        timeStamp = monthTitles[month-1] + " \(day)" +
-               (year == year2 ? "" : ", \(year)") + " - " +
-                monthTitles[month2-1] + " \(day2), \(year)"
+        timeStamp = getDailyTimeStamp(originalData)
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
                (
@@ -223,30 +216,33 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/d"
         
+        let timeStamp2 = getWeeklyTimeStamp(dataValues) ?? timeStamp
+        
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
             (
                 dataValues.map { $0.value },
                 dataValues.map{
                       dateFormatter.string(from:$0.startDate) + "-" +
                       dateFormatter.string(from:$0.endDate) },
-                timeStamp
+                timeStamp2
             )
     }
     
     //
     // Collect data for monthly average walking speed
     //
-    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
-                                        _ timeStamp :  String)
+    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp :  String)
     {
         let dataValues = xlateMonthlyDataValues(originalData)
+        
+        let timeStamp2 = getMonthlyTimeStamp(dataValues) ?? timeStamp
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
              (
                   dataValues.map{ $0.value },
                   dataValues.map{
                       monthTitles[extractDate($0.startDate).month-1]},
-                  timeStamp
+                  timeStamp2
              )
     }
     

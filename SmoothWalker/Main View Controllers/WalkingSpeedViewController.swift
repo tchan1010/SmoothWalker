@@ -20,6 +20,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     /// The date from the latest server response.
     private var dateLastUpdated: Date?
     private var originalData  = [HealthDataTypeValue]()
+    private var timeStamp : String?
     
     /// MARK:  Handle different display timelines as selected by user
     static var displayTimeline = Timeline.daily
@@ -62,18 +63,6 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     }
     
     //
-    // change the diesplay timeline as per user
-    //
-    private func changeTimeline(_ timeline : Timeline)
-    {
-        if WalkingSpeedViewController.displayTimeline != timeline
-        {
-            WalkingSpeedViewController.displayTimeline = timeline
-            self.reloadData()
-        }
-    }
-    
-    //
     // MARK: - Buttons action
     //
     
@@ -98,11 +87,14 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         switch (WalkingSpeedViewController.displayTimeline) {
         case .daily:
             dataValues = originalData
+            timeStamp = getDailyTimeStamp(originalData)
         case .weekly:
             dataValues = xlateWeeklyDataValues(originalData)
+            timeStamp = getWeeklyTimeStamp(dataValues)
             break
         case .monthly:
             dataValues = xlateMonthlyDataValues(originalData)
+            timeStamp = getMonthlyTimeStamp(dataValues)
             break;
         }
     }
@@ -118,8 +110,6 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
        
         super.reloadData()
         
-        //dataValues = saveDataValues
-        
         // Change axis to use weekdays for six-minute walk sample
         DispatchQueue.main.async {
             
@@ -130,9 +120,8 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             let maxY = self.dataValues.reduce(0.0, { max($0, $1.value) })
             self.chartView.graphView.yMaximum = computeMaxValue(maxY,0.25)
             
-            if let dateLastUpdated = self.dateLastUpdated {
-                self.chartView.headerView.detailLabel.text = createChartDateLastUpdatedLabel(dateLastUpdated)
-            }
+            self.chartView.headerView.detailLabel.text = self.timeStamp ??
+                createChartDateLastUpdatedLabel(self.dateLastUpdated ?? Date())
         }
     }
 }
