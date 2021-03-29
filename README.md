@@ -16,7 +16,8 @@ Run the following commands on a Mac computer:
 
 1  git clone https://github.com/tchan1010/SmoothWalker.git
 2. cd SmoothWalker
-3. git checkout depictWalkingSpeed
+3. git checkout depictWalkingSpeed (or
+   git checkout depictLatestWalkingSpeed)
 4. Run Xcode on the SmoothWalker.xcodeproj file
 5. Install the app onto your iPhone via Xcode
 
@@ -47,6 +48,18 @@ page for that chart. The detailed page shows the selected chart,
 and a table listing all the raw data for that chart. You may 
 dismiss a detailed page by tapping on anywhere in that page.
 
+There are two branches in this release:
+
+1. depictWalkingSpeed  
+
+    Show the walking speed charts based on the provided 
+    mock data
+
+2. depictLatestWalkingSpeed
+
+    Show the walking speed charts based on the latest 
+    data as obtained from the Health store.
+
 
 ## Version History
 
@@ -69,3 +82,7 @@ dismiss a detailed page by tapping on anywhere in that page.
          the app.
 
 3/28/21  Updated README and checked in final code.
+
+         Created the depictLatestWalkingSpeed branch to 
+         fetch the real (last week) walking speed data
+         from the Health store.
