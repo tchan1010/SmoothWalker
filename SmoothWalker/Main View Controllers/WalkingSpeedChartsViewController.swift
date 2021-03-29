@@ -135,7 +135,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         HealthData.healthStore.save(addedSamples) { (success, error) in
            
             if success {
-                //self.originalData = []
                 self.loadData()
             }
             else if let error = error {
@@ -194,8 +193,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     // Collect data for daily average walking speed
     // caller has checked originalData contains data
     //
-    private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
-                                      _ timeStamp : inout String)
+    private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp : inout String)
     {
         let (year,month,day) = extractDate(originalData.first!.startDate)
         
@@ -205,29 +203,34 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                (year == year2 ? "" : ", \(year)") + " - " +
                 monthTitles[month2-1] + " \(day2), \(year)"
         
-        dataItem.values = originalData.map{ $0.value }
-        
-        dataItem.labels = originalData.map{
-            let (_,month,day) = extractDate($0.startDate)
-            return "\(month)/\(day)" }
-    }
+        (dataItem.values,dataItem.labels,dataItem.timeStamp) =
+               (
+                   originalData.map{ Double($0.value) },
+                   originalData.map{
+                       let (_,month,day) = extractDate($0.startDate)
+                       return "\(month)/\(day)" },
+                   timeStamp
+               )
+     }
     
     //
     // Collect data for weekly average walking speed
     //
-    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?),
-                                       _ timeStamp :  String)
+    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp :  String)
     {
         let dataValues = xlateWeeklyDataValues(originalData)
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/d"
         
-        dataItem.values = dataValues.map { $0.value }
-        dataItem.labels = dataValues.map{
+        (dataItem.values,dataItem.labels,dataItem.timeStamp) =
+            (
+                dataValues.map { $0.value },
+                dataValues.map{
                       dateFormatter.string(from:$0.startDate) + "-" +
-                        dateFormatter.string(from:$0.endDate) }
-        dataItem.timeStamp = timeStamp
+                      dateFormatter.string(from:$0.endDate) },
+                timeStamp
+            )
     }
     
     //
@@ -238,10 +241,13 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     {
         let dataValues = xlateMonthlyDataValues(originalData)
         
-        dataItem.values = dataValues.map{ $0.value }
-        dataItem.labels = dataValues.map{
-                    monthTitles[extractDate($0.startDate).month-1]}
-        dataItem.timeStamp = timeStamp
+        (dataItem.values,dataItem.labels,dataItem.timeStamp) =
+             (
+                  dataValues.map{ $0.value },
+                  dataValues.map{
+                      monthTitles[extractDate($0.startDate).month-1]},
+                  timeStamp
+             )
     }
     
     //

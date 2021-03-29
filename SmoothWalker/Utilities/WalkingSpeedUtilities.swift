@@ -260,9 +260,5 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
 //
 func computeMaxValue(_ targetValue : Double, _ incr : Double) -> CGFloat
 {
-    var result = incr
-    while (result <= targetValue) {
-        result += incr
-    }
-    return CGFloat(result)
+    CGFloat(Double(((Int(targetValue * 100.0) / 25) + 1)) * 0.25)
 }
