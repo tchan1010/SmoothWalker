@@ -16,7 +16,7 @@ This app displays your latest walking speed data, as obtained from your device's
 
 Run the following commands on a Mac computer:
 
-1  git clone https://github.com/tchan1010/SmoothWalker.git
+1. git clone https://github.com/tchan1010/SmoothWalker.git
 
 2. cd SmoothWalker
 
