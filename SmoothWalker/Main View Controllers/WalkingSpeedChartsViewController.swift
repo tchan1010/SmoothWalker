@@ -112,6 +112,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     // fetch Mock data and load to Health store
     @objc
     private func fetchMockedData() {
+        
         Network.pull() { [weak self] (serverResponse) in
             self?.dateLastUpdated = serverResponse.date
             self?.queryPredicate = createLastWeekPredicate(from:Date())
