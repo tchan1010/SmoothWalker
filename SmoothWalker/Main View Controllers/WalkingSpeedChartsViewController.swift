@@ -94,6 +94,21 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     
     // MARK: Network
     
+    //
+    // convert multiple health records of the same date
+    // into a single health record
+    //
+    private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
+    {
+        for i in 1..<dataValues.count {
+            if dataValues[i-1].startDate == dataValues[i].startDate {
+                dataValues[i].value += dataValues[i-1].value
+                dataValues[i-1].value = 0
+            }
+        }
+        dataValues = dataValues.filter{ $0.value > 0 }
+    }
+    
     // fetch Mock data and load to Health store
     @objc
     private func fetchMockedData() {
@@ -272,6 +287,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 
                 return dataValue
             }
+            
+            self.compactDataValues(&self.dataValues)
             
             completion()
         }
