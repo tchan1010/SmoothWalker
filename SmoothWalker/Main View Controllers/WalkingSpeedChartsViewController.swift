@@ -63,7 +63,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                     self.loadData()
                 }
                 else {
-                    self.fetchMockedData()
+                    self.fetchLatestData()
                 }
             }
         }
@@ -80,7 +80,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         DispatchQueue.main.async {
             if turnOn {
                 if self.fetchButton == nil {
-                    self.fetchButton = UIBarButtonItem(title: "Fetch", style: .plain, target: self, action: #selector(self.fetchMockedData))
+                    self.fetchButton = UIBarButtonItem(title: "Fetch", style: .plain, target: self, action: #selector(self.fetchLatestData))
             
                     self.navigationItem.rightBarButtonItem = self.fetchButton!
                 }
@@ -100,6 +100,12 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
     {
+        guard !dataValues.isEmpty else {
+            return
+        }
+        
+        dataValues.sort{ $0.startDate < $1.startDate }
+        
         var num = 0
         for i in 1..<dataValues.count {
             if dataValues[i-1].startDate == dataValues[i].startDate {
@@ -116,58 +122,15 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             dataValues[dataValues.count-1].value /= Double(num)
         }
         dataValues = dataValues.filter{ $0.value > 0 }
+        self.dateLastUpdated = dataValues.last!.endDate
     }
     
     // fetch Mock data and load to Health store
     @objc
-    private func fetchMockedData() {
+    private func fetchLatestData() {
         
-        Network.pull() { [weak self] (serverResponse) in
-            self?.dateLastUpdated = serverResponse.date
-            self?.queryPredicate = createLastWeekPredicate(from:Date())
-            self?.handleServerResponse(serverResponse)
-        }
-    }
-    
-    /// Handle a response fetched from a remote server. This function will also save any HealthKit samples and update the UI accordingly.
-    private func handleServerResponse(_ serverResponse: ServerResponse) {
-        let weeklyReport = serverResponse.weeklyReport
-        let addedSamples = weeklyReport.samples.map { (serverHealthSample) -> HKQuantitySample in
-                        
-            // Set the sync identifier and version
-            var metadata = [String: Any]()
-            let sampleSyncIdentifier = String(format: "%@_%@", weeklyReport.identifier,
-                        serverHealthSample.syncIdentifier
-                )
-    
-            metadata[HKMetadataKeySyncIdentifier] = sampleSyncIdentifier
-            metadata[HKMetadataKeySyncVersion] = serverHealthSample.syncVersion
-            
-            // Create HKQuantitySample
-            let quantity = HKQuantity(unit: meterPerSecond, doubleValue: serverHealthSample.value / 360.0)
-            let sampleType = HKQuantityType.quantityType(forIdentifier: .walkingSpeed)!
-            
-            let quantitySample = HKQuantitySample(type: sampleType,
-                                                  quantity: quantity,
-                                                  start: serverHealthSample.startDate,
-                                                  end: serverHealthSample.endDate,
-                                                  metadata: metadata)
-            
-            return quantitySample
-        }
-        
-        HealthData.healthStore.save(addedSamples) { (success, error) in
-           
-            if success {
-                self.loadData()
-            }
-            else if let error = error {
-                DispatchQueue.main.async {
-                    self.showMsgAction(msg:"Access Health store failed (Error: \(error.localizedDescription)). If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
-                    self.turnOnOffFetchButton(true)
-                }
-            }
-        }
+        self.queryPredicate = createLastWeekPredicate(from:Date())
+        self.loadData()
     }
     
     func showMsgAction( msg : String) {
@@ -208,6 +171,12 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                     DispatchQueue.main.async { [weak self] in
                         self?.reloadData()
                     }
+                }
+            }
+            else {
+                DispatchQueue.main.async {
+                    self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
+                    self.turnOnOffFetchButton(true)
                 }
             }
         }
