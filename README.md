@@ -29,7 +29,7 @@ There are two branches in this release:
 
 1. depictWalkingSpeed 
 
-    Show the average walking speed charts based on a provided mock data
+    Show the average walking speed charts based on a set of mock data
 
 2. depictLatestWalkingSpeed
 
@@ -46,16 +46,11 @@ There are two branches in this release:
 
 3/27/21  Show all charts on the Walking Speed main page.
 
-         When user taps on any chart, show a detailed page 
-         for that chart (chart and table).
+         When user taps on any chart, show a detailed page for that chart (chart and table).
 
-         Added a Settings button in the error message dialog
-         to re-direct user to the Settings app to authorize
-         the app has access to the Health store.
+         Added a Settings button in the error message dialog to re-direct user to the Settings app to authorize the app has access to the Health store.
 
-         Show a Fetch button whenever user needs to manually 
-         fetch walking speed data from the Health store for 
-         the app.
+         Show a Fetch button whenever user needs to manually fetch walking speed data from the Health store for the app.
 
 3/28/21  Updated README and checked in final code.
          Updated README file in the main branch.
