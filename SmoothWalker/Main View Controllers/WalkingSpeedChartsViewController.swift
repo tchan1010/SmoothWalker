@@ -100,7 +100,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
     {
-        guard !dataValues.isEmpty else {
+        guard dataValues.count > 1 else {
             return
         }
         
