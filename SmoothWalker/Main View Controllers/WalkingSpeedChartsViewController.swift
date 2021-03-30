@@ -100,11 +100,20 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
     {
+        var num = 0
         for i in 1..<dataValues.count {
             if dataValues[i-1].startDate == dataValues[i].startDate {
                 dataValues[i].value += dataValues[i-1].value
                 dataValues[i-1].value = 0
+                num = num == 0 ? 2 : num + 1
             }
+            else if num > 0 {
+                dataValues[i-1].value /= Double(num)
+                num = 0
+            }
+        }
+        if num  > 0 {
+            dataValues[dataValues.count-1].value /= Double(num)
         }
         dataValues = dataValues.filter{ $0.value > 0 }
     }
