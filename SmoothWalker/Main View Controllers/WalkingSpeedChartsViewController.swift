@@ -33,6 +33,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     
     var fetchButton : UIBarButtonItem?
     
+    private let NO_MOBILITY_DATA = "No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app."
+    
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
@@ -95,7 +97,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     // MARK: Network
     
     //
-    // convert multiple health records of the same date
+    // Convert multiple health records of the same date
     // into a single health record
     //
     private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
@@ -122,10 +124,10 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             dataValues[dataValues.count-1].value /= Double(num)
         }
         dataValues = dataValues.filter{ $0.value > 0 }
-        self.dateLastUpdated = dataValues.last!.endDate
+        self.dateLastUpdated = dataValues.last?.endDate
     }
     
-    // fetch Mock data and load to Health store
+    // Fetch lastest average walking speed data from Health store
     @objc
     private func fetchLatestData() {
         
@@ -133,6 +135,9 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         self.loadData()
     }
     
+    // Tell users there is no walking speed data, and advise them to
+    // visit Settings/Health app to fix authorization issue
+    //
     func showMsgAction( msg : String) {
         let vc = UIAlertController(title: "SmoothWalker", message: msg, preferredStyle: .alert)
         
@@ -146,7 +151,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         self.present(vc, animated:true, completion: nil)
     }
     
-    // direct user to the Settings app
+    // Direct user to the Settings app, in which they can find the Health app
     private func openSettings() {
         
         let url = URL(string:UIApplication.openSettingsURLString)
@@ -158,6 +163,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
    
     // MARK: - Data Functions
     
+    // Attempt to load walkijng speed data from Health store to the app
+    //
     func loadData() {
         
         self.dataValues = []
@@ -165,17 +172,26 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         performQuery {
             if !self.dataValues.isEmpty {
+                
+                // Success! Got walking speed data
+                
                 self.originalData = self.dataValues
+                
                 self.setupChartsData {
-                    // Dispatch UI updates in the main thread.
+                    
                     DispatchQueue.main.async { [weak self] in
+                        
+                        // Update and display the daily, weekly, monthly charts
+                        
                         self?.reloadData()
                     }
                 }
             }
             else {
-                DispatchQueue.main.async {
-                    self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
+                // Failure. No data. Tell users and show the Fetch button
+                
+                DispatchQueue.main.async { [self] in
+                    self.showMsgAction(msg:NO_MOBILITY_DATA)
                     self.turnOnOffFetchButton(true)
                 }
             }
@@ -183,67 +199,68 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     }
 
     //
-    // Collect data for daily average walking speed
-    // caller has checked originalData contains data
+    // Collect data for daily average walking speed.
+    // Caller has verified that originalData contains data
     //
-    private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp : inout String)
+    private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
     {
-        timeStamp = getChartTimeStamp(originalData)!
-        
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
                (
-                   originalData.map{ Double($0.value) },
+                   originalData.map{ $0.value },
+                 
                    originalData.map{
                        let (_,month,day) = extractDate($0.startDate)
                        return "\(month)/\(day)" },
-                   timeStamp
+                
+                   getChartTimeStamp(originalData)!
                )
      }
     
     //
     // Collect data for weekly average walking speed
     //
-    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp :  String)
+    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
     {
         let dataValues = xlateWeeklyDataValues(originalData)
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/d"
         
-        let timeStamp2 = getChartTimeStamp(dataValues) ?? timeStamp
-        
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
             (
                 dataValues.map { $0.value },
+                
                 dataValues.map{
                       dateFormatter.string(from:$0.startDate) + "-" +
                       dateFormatter.string(from:$0.endDate) },
-                timeStamp2
+                
+                getChartTimeStamp(dataValues)!
             )
     }
     
     //
     // Collect data for monthly average walking speed
     //
-    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?), _ timeStamp :  String)
+    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
     {
         let dataValues = xlateMonthlyDataValues(originalData)
-        
-        let timeStamp2 = getChartTimeStamp(dataValues) ?? timeStamp
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
              (
                   dataValues.map{ $0.value },
+    
                   dataValues.map{
                       monthTitles[extractDate($0.startDate).month-1]},
-                  timeStamp2
+    
+                  getChartTimeStamp(dataValues)!
              )
     }
     
     //
-    // Collect data from Health store
+    // Query data from Health store
     //
     func performQuery(completion: @escaping () -> Void) {
+        
         guard let sampleType = getSampleType(for: dataTypeIdentifier) else { return }
         
         let anchoredObjectQuery = HKAnchoredObjectQuery(type: sampleType,
@@ -289,12 +306,10 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     func setupChartsData( completion : @escaping () -> Void) {
      
         if  !originalData.isEmpty  {
-            
-            var timeStamp : String = ""
        
-            setupDailyDataValues(&data[0],&timeStamp)
-            setupWeeklyDataValues(&data[1],timeStamp)
-            setupMonthlyDataValues(&data[2],timeStamp)
+            setupDailyDataValues(&data[0])
+            setupWeeklyDataValues(&data[1])
+            setupMonthlyDataValues(&data[2])
         }
 
         completion()
@@ -307,7 +322,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         super.collectionView(collectionView, didSelectItemAt: indexPath)
         
         guard !originalData.isEmpty else {
-            self.showMsgAction(msg:"No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app.")
+            
+            self.showMsgAction(msg:NO_MOBILITY_DATA)
               return
         }
         
@@ -316,9 +332,11 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         let detailedView = WalkingSpeedViewController()
         detailedView.dataValues = originalData
+        
         WalkingSpeedViewController.displayTimeline =
             indexPath.row == 0 ? .daily :
             indexPath.row == 1 ? .weekly : .monthly
+        
         self.present(detailedView, animated: true, completion: nil)
     }
 }
