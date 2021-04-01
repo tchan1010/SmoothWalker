@@ -46,7 +46,8 @@ class MainTabViewController: UITabBarController {
         
         viewController.tabBarItem = UITabBarItem(title: "Welcome",
                                                  image: UIImage(systemName: "circle"),
-                                                 selectedImage: UIImage(systemName: "circle.fill"))
+                                                 selectedImage: UIImage(systemName:
+                                                                            "circle.fill"))
         return viewController
     }
     
