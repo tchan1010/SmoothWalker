@@ -262,15 +262,20 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         }
     }
     
+    
+    // HashMap is not sorted
+    dataValues.sort { $0.startDate < $1.startDate }
+    
     // Optional: add dummy month records before and after to make
     // the chart looks pretty
     
-    if (dataValues.count == 1) {
+    if (dataValues.count <= 2) {
         var tmp = [HealthDataTypeValue]()
         let (year,month,_) = extractDate(dataValues.first!.startDate)
         addPlaceholderData(year,month-1,1,-1,&tmp)
-        tmp.append(dataValues.first!)
-        addPlaceholderData(year,month+1,1,-1,&tmp)
+        tmp += dataValues
+        let (year2,month2,_) = extractDate(dataValues.last!.endDate)
+        addPlaceholderData(year2,month2+1,1,-1,&tmp)
         return tmp
     }
     

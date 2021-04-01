@@ -20,7 +20,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     /// The date from the latest server response.
     private var dateLastUpdated: Date?
     private var originalData  = [HealthDataTypeValue]()
-    private var timeStamp : String?
+    //private var timeStamp : String?
     
     /// MARK:  Handle different display timelines as selected by user
     static var displayTimeline = Timeline.daily
@@ -33,7 +33,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         //
         // allow user to exit this view via tapping on the view
         //
-        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapBackButton))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(exitView))
         self.view.addGestureRecognizer(tap)
     }
     
@@ -46,7 +46,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // hide the superclass Fetch button
+        // Hide the superclass Fetch button
         if let fetchButton = navigationItem.rightBarButtonItem {
             fetchButton.title = ""
         }
@@ -57,7 +57,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
      
         //
         // Caller has setup the dataValues and displayTimeline
-        // Show the chart and table
+        // Just show the chart and table
         //
         self.reloadData()
     }
@@ -66,17 +66,18 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
     // MARK: - Buttons action
     //
     
-    // Return to the parent view
+    // Go back to the parent view
+    //
     @objc
-    func didTapBackButton() {
+    func exitView() {
         
         self.dismiss(animated: true, completion: nil)
     }
     
+    // // Dummy out the superclass function
     @objc
     override func didTapFetchButton() {
-        
-        // dummy out the superclass function
+
     }
     
     //
@@ -94,7 +95,7 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
             dataValues = xlateMonthlyDataValues(originalData)
             break;
         }
-        timeStamp = getChartTimeStamp(dataValues)
+        //timeStamp = getChartTimeStamp(dataValues)
     }
     
     // MARK: Function Overrides
@@ -104,21 +105,24 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         if (originalData.isEmpty) {
             originalData = dataValues
         }
+        
         setupDataValuesForTimeline()
        
+        // super class will show the chart and table
+        //
         super.reloadData()
         
-        // Change axis to use weekdays for six-minute walk sample
         DispatchQueue.main.async {
             
-            // Enable display of fractional digits
+            // Enable display of fractional digits on Y-axis
             self.chartView.graphView.numberFormatter.maximumFractionDigits = 2
             
-            // Compute and set the Y-axis maximum
+            // Compute and set the Y-axis maximum value
             let maxY = self.dataValues.reduce(0.0, { max($0, $1.value) })
             self.chartView.graphView.yMaximum = computeMaxValue(maxY)
             
-            self.chartView.headerView.detailLabel.text = self.timeStamp ??
+            // Set the chart date-range timeStamp
+            self.chartView.headerView.detailLabel.text = getChartTimeStamp(self.dataValues) ??
                 createChartDateLastUpdatedLabel(self.dateLastUpdated ?? Date())
         }
     }

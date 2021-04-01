@@ -188,7 +188,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 }
             }
             else {
-                // Failure. No data. Tell users and show the Fetch button
+                // Failure: No data. Tell users and show the Fetch button
                 
                 DispatchQueue.main.async { [self] in
                     self.showMsgAction(msg:NO_MOBILITY_DATA)
@@ -219,7 +219,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     // Collect data for weekly average walking speed
     //
-    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
+    private func setupWeeklyDataValues(_ dataItem : inout (dataTypeIdentifier : String,  values: [Double], labels: [String], timeStamp : String?) )
     {
         let dataValues = xlateWeeklyDataValues(originalData)
         
@@ -241,7 +241,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     // Collect data for monthly average walking speed
     //
-    private func setupMonthlyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
+    private func setupMonthlyDataValues(_ dataItem : inout ( dataTypeIdentifier: String, values : [Double], labels : [String], timeStamp : String?) )
     {
         let dataValues = xlateMonthlyDataValues(originalData)
         
@@ -293,7 +293,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     }
     
     // Override the hr:min:sec in the provided date
-    // to facilitate the xlation of daily data to weekly date
+    // to facilitate the xlation of date data later on
     //
     func simpleDate(_ old : Date) -> Date {
         let (year,month,day) = extractDate(old)
@@ -301,7 +301,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     }
     
     // Collect data, labels and time stamp for
-    // daily, weekly and monthly charts
+    // the daily, weekly and monthly charts
     //
     func setupChartsData( completion : @escaping () -> Void) {
      
@@ -316,6 +316,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     }
     
     // MARK: handle user selection of chart
+    // Show a detailed chart view (chart and table
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
