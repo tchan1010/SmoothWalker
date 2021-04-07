@@ -95,7 +95,6 @@ func composeOffsetDate(_ year : Int, _ month : Int,
                        _ day : Int,  _ offset : Int) -> Date?
 {
     var newDay = day + offset
-
     if newDay > maxDaysOfMonth(month,year) {
         newDay -= maxDaysOfMonth(month,year)
         let newMonth = month + 1
@@ -111,7 +110,7 @@ func composeOffsetDate(_ year : Int, _ month : Int,
             newMonth = 12
             newYear -= 1
         }
-        newDay = maxDaysOfMonth(newMonth,newYear) - newDay
+        newDay = maxDaysOfMonth(newMonth,newYear) + newDay
         return composeDate(newYear,newMonth,newDay)
     }
     return composeDate(year,month,newDay)
@@ -175,11 +174,16 @@ func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataType
           
             let weekday = calendar.component(.weekday, from: $0.startDate)
             
-            let firstWeekDate = composeOffsetDate(year,month,day,-weekday+1)!
+            var firstWeekDate = composeOffsetDate(year,month,day,-weekday+1)
+            
+            if firstWeekDate == nil {
+                print("**** Got firstWeekDate failed!")
+                firstWeekDate = $0.startDate
+            }
             
             let lastWeekDate = composeOffsetDate(year,month,day,7-weekday)!
             
-            let data = HealthDataTypeValue(startDate: firstWeekDate, endDate: lastWeekDate, value: $0.value / 7.0)
+            let data = HealthDataTypeValue(startDate: firstWeekDate!, endDate: lastWeekDate, value: $0.value / 7.0)
             
             dataValues.append(data)
         }

@@ -46,16 +46,10 @@ class MainTabViewController: UITabBarController {
         let viewController = WelcomeViewController()
         
         viewController.tabBarItem = UITabBarItem(title: "Welcome",
-<<<<<<< HEAD
-                                                 image: UIImage(systemName: "circle"),
-                                                 selectedImage: UIImage(systemName:
-                                                                            "circle.fill"))
-=======
                                                  image: UIImage(systemName:
                                                         "house"),
                                                  selectedImage: UIImage(systemName:
                                                         "house.fill"))
->>>>>>> depictLatestWalkingSpeed
         return viewController
     }
     
