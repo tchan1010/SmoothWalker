@@ -39,6 +39,7 @@ There are a branch in this release:
 ## Version History
 
 3/23/21  Created the SmoothWalker GitHub repository
+
          Created the depictWalkingSpeed branch
 
 3/26/21  Checked-in updated code for Walking Speed feature.
@@ -56,4 +57,5 @@ There are a branch in this release:
          Created the depictLatestWalkingSpeed branch to fetch the real (last week) walking speed data from the Health store.
 
 4/6/21   Merged the depictLatestWalkingSpeed branch to the main branch.
+
          Deleted the depictLatestWalkingSpeed branch.
