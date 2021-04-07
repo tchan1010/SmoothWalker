@@ -6,7 +6,6 @@
             "identifier": "WeeklyReport1",
             "startDate": "2020-06-16T08:00:00-07:00",
             "endDate": "2020-06-22T08:00:00-07:00",
-            
             "samples": [
                 {
                     "syncIdentifier": "SyncIdentifier1",

@@ -13,6 +13,10 @@ class DataTypeCollectionViewController: UIViewController {
     
     static let cellIdentifier = "DataTypeCollectionViewCell"
     
+    // scale factor to fit multiple charts in one screen
+    // This variable is overridden in WalkingSpeedChartsViewController
+    var scaleCellHeight : CGFloat = 1.0
+    
     // MARK: - Properties
     
     lazy var collectionView: UICollectionView = {
@@ -20,13 +24,14 @@ class DataTypeCollectionViewController: UIViewController {
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.dataSource = self
+        collectionView.delegate = self
         collectionView.register(DataTypeCollectionViewCell.self, forCellWithReuseIdentifier: Self.cellIdentifier)
         collectionView.alwaysBounceVertical = true
         
         return collectionView
     }()
     
-    var data: [(dataTypeIdentifier: String, values: [Double])] = []
+    var data: [(dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?)] = []
     
     // MARK: - Initalizers
     
@@ -64,7 +69,7 @@ class DataTypeCollectionViewController: UIViewController {
     // MARK: - View Helper Functions
     
     private func setupNavigationController() {
-        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.prefersLargeTitles = false //true
     }
     
     private func setUpViews() {
@@ -124,13 +129,21 @@ class DataTypeCollectionViewController: UIViewController {
         heightInset += navigationController?.navigationBar.bounds.height ?? 0
         heightInset += tabBarController?.tabBar.bounds.height ?? 0
         
-        let cellHeight = isLandscape ? view.bounds.height - heightInset : view.bounds.width - widthInset
+        let cellHeight = isLandscape ? view.bounds.height - heightInset :
+            view.bounds.width  * scaleCellHeight - widthInset
         
         return cellHeight
     }
 }
 
-extension DataTypeCollectionViewController: UICollectionViewDataSource {
+extension DataTypeCollectionViewController: UICollectionViewDataSource, UICollectionViewDelegate
+{
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+       
+        collectionView.deselectItem(at: indexPath, animated: true)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return data.count
     }
@@ -138,11 +151,13 @@ extension DataTypeCollectionViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let content = data[indexPath.row]
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Self.cellIdentifier,
-                                                            for: indexPath) as? DataTypeCollectionViewCell else {
+                    for: indexPath) as? DataTypeCollectionViewCell else {
             return DataTypeCollectionViewCell()
         }
         
-        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values)
+        cell.updateChartView(with: content.dataTypeIdentifier, values: content.values, labels:content.labels,
+            timeStamp:content.timeStamp,
+            row: indexPath.row)
         
         return cell
     }

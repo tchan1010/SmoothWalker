@@ -63,30 +63,51 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
         return [leading, top, trailing, bottom]
     }
     
-    func updateChartView(with dataTypeIdentifier: String, values: [Double]) {
+    func getChartHeader(_ row : Int) -> String {
+        switch (row) {
+        case 0: return "Daily Average Walking Speed"
+        case 1: return "Weekly Average Walking Speed"
+        default: return "Monthly Average Walking Speed"
+        }
+    }
+    
+    func updateChartView(with dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?, row : Int) {
         self.dataTypeIdentifier = dataTypeIdentifier
         self.statisticalValues = values
         
         // Update headerView
-        chartView.headerView.titleLabel.text = getDataTypeName(for: dataTypeIdentifier) ?? "Data"
-        chartView.headerView.detailLabel.text = createChartWeeklyDateRangeLabel()
+        chartView.headerView.titleLabel.text = !labels.isEmpty ?
+            getChartHeader(row) :
+            getDataTypeName(for: dataTypeIdentifier) ?? "Data"
+        chartView.headerView.detailLabel.text =
+            timeStamp ?? createChartWeeklyDateRangeLabel()
         
         // Update graphView
         chartView.applyDefaultConfiguration()
-        chartView.graphView.horizontalAxisMarkers = createHorizontalAxisMarkers()
+        
+        chartView.graphView.horizontalAxisMarkers = labels.isEmpty ? createHorizontalAxisMarkers() : labels
         
         // Update graphView dataSeries
         let dataPoints: [CGFloat] = statisticalValues.map { CGFloat($0) }
-        
+
         guard
             let unit = preferredUnit(for: dataTypeIdentifier),
             let unitTitle = getUnitDescription(for: unit)
         else {
             return
         }
-        
+         
         chartView.graphView.dataSeries = [
             OCKDataSeries(values: dataPoints, title: unitTitle)
         ]
+        
+        DispatchQueue.main.async {
+            
+            self.chartView.graphView.numberFormatter.maximumFractionDigits = 2
+            
+            // Compute and set the Y-axis maximum value
+            let maxY = dataPoints.reduce(0.0, { max($0, $1) })
+            self.chartView.graphView.yMaximum =  computeMaxValue(Double(maxY))
+        }
     }
 }

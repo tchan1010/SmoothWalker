@@ -81,7 +81,7 @@ class DataTableViewController: UITableViewController {
     // MARK: - UITableViewDataSource
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataValues.count
+        return dataValues.filter{ $0.value > 0.0 }.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -89,10 +89,22 @@ class DataTableViewController: UITableViewController {
             return DataTypeTableViewCell()
         }
         
-        let dataValue = dataValues[indexPath.row]
+        let dataValue = dataValues.filter{ $0.value > 0.0}[indexPath.row]
         
         cell.textLabel?.text = formattedValue(dataValue.value, typeIdentifier: dataTypeIdentifier)
-        cell.detailTextLabel?.text = dateFormatter.string(from: dataValue.startDate)
+        
+        switch (WalkingSpeedViewController.displayTimeline) {
+        case .weekly:
+            let dateFormatter2 = DateFormatter()
+            dateFormatter2.dateFormat = "M/d/YY"
+            cell.detailTextLabel?.text = dateFormatter2.string(from:dataValue.startDate)
+                + " - " + dateFormatter2.string(from:dataValue.endDate)
+        case .monthly:
+            let dateStrs = dateFormatter.string(from: dataValue.startDate).components(separatedBy: " ")
+            cell.detailTextLabel?.text = dateStrs[0] + " " + dateStrs[2]
+        case .daily:
+            cell.detailTextLabel?.text = dateFormatter.string(from: dataValue.startDate)
+        }
         
         return cell
     }

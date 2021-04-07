@@ -78,17 +78,17 @@ class HealthQueryTableViewController: ChartTableViewController, HealthQueryDataS
         guard let sampleType = getSampleType(for: dataTypeIdentifier) else { return }
         
         let anchoredObjectQuery = HKAnchoredObjectQuery(type: sampleType,
-                                                        predicate: queryPredicate,
-                                                        anchor: queryAnchor,
-                                                        limit: queryLimit) {
+                                predicate: queryPredicate,
+                                anchor: queryAnchor,
+                                limit: queryLimit) {
             (query, samplesOrNil, deletedObjectsOrNil, anchor, errorOrNil) in
             
             guard let samples = samplesOrNil else { return }
             
             self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
                 var dataValue = HealthDataTypeValue(startDate: sample.startDate,
-                                                    endDate: sample.endDate,
-                                                    value: .zero)
+                    endDate: sample.endDate,
+                    value: .zero)
                 if let quantitySample = sample as? HKQuantitySample,
                    let unit = preferredUnit(for: quantitySample) {
                     dataValue.value = quantitySample.quantity.doubleValue(for: unit)

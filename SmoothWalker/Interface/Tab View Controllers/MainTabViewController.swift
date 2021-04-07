@@ -30,7 +30,8 @@ class MainTabViewController: UITabBarController {
             createWelcomeViewController(),
             createWeeklyQuantitySampleTableViewController(),
             createChartViewController(),
-            createWeeklyReportViewController()
+            createWeeklyReportViewController(),
+            createWalkingSpeedTableViewController()
         ]
         
         self.viewControllers = viewControllers.map {
@@ -45,9 +46,16 @@ class MainTabViewController: UITabBarController {
         let viewController = WelcomeViewController()
         
         viewController.tabBarItem = UITabBarItem(title: "Welcome",
+<<<<<<< HEAD
                                                  image: UIImage(systemName: "circle"),
                                                  selectedImage: UIImage(systemName:
                                                                             "circle.fill"))
+=======
+                                                 image: UIImage(systemName:
+                                                        "house"),
+                                                 selectedImage: UIImage(systemName:
+                                                        "house.fill"))
+>>>>>>> depictLatestWalkingSpeed
         return viewController
     }
     
@@ -56,8 +64,17 @@ class MainTabViewController: UITabBarController {
         let viewController = WeeklyQuantitySampleTableViewController(dataTypeIdentifier: dataTypeIdentifier)
         
         viewController.tabBarItem = UITabBarItem(title: "Health Data",
-                                                 image: UIImage(systemName: "triangle"),
-                                                 selectedImage: UIImage(systemName: "triangle.fill"))
+                                                 image: UIImage(systemName: "circle.grid.cross"),
+                                                 selectedImage: UIImage(systemName: "circle.grid.cross.fill"))
+        return viewController
+    }
+    
+    private func createWalkingSpeedTableViewController() -> UIViewController {
+        let viewController = WalkingSpeedChartsViewController()
+        
+        viewController.tabBarItem = UITabBarItem(title: "Walking Speed",
+                                                 image: UIImage(systemName: "figure.walk"),
+                                                 selectedImage: UIImage(systemName: "figure.walk.fill"))
         return viewController
     }
     
@@ -65,8 +82,8 @@ class MainTabViewController: UITabBarController {
         let viewController = MobilityChartDataViewController()
         
         viewController.tabBarItem = UITabBarItem(title: "Charts",
-                                                 image: UIImage(systemName: "square"),
-                                                 selectedImage: UIImage(systemName: "square.fill"))
+                                                 image: UIImage(systemName: "chart.bar.doc.horizontal"),
+                                                 selectedImage: UIImage(systemName: "chart.bar.doc.horizontal.fill"))
         return viewController
     }
     
@@ -74,8 +91,8 @@ class MainTabViewController: UITabBarController {
         let viewController = WeeklyReportTableViewController()
         
         viewController.tabBarItem = UITabBarItem(title: "Weekly Report",
-                                                 image: UIImage(systemName: "star"),
-                                                 selectedImage: UIImage(systemName: "star.fill"))
+                                                 image: UIImage(systemName: "calendar"),
+                                                 selectedImage: UIImage(systemName: "calendar.fill"))
         return viewController
     }
     

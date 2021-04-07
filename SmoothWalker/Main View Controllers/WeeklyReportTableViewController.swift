@@ -58,12 +58,15 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
     /// Handle a response fetched from a remote server. This function will also save any HealthKit samples and update the UI accordingly.
     override func handleServerResponse(_ serverResponse: ServerResponse) {
         let weeklyReport = serverResponse.weeklyReport
+        
         let addedSamples = weeklyReport.samples.map { (serverHealthSample) -> HKQuantitySample in
                         
             // Set the sync identifier and version
             var metadata = [String: Any]()
-            let sampleSyncIdentifier = String(format: "%@_%@", weeklyReport.identifier, serverHealthSample.syncIdentifier)
-            
+            let sampleSyncIdentifier = String(format: "%@_%@", weeklyReport.identifier,
+                        serverHealthSample.syncIdentifier
+                )
+    
             metadata[HKMetadataKeySyncIdentifier] = sampleSyncIdentifier
             metadata[HKMetadataKeySyncVersion] = serverHealthSample.syncVersion
             
@@ -75,7 +78,6 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
                                                   start: serverHealthSample.startDate,
                                                   end: serverHealthSample.endDate,
                                                   metadata: metadata)
-            
             return quantitySample
         }
         

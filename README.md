@@ -1,7 +1,6 @@
 # A sample Mobility Health App
 
-This app accesses ussers' health data via the IOS HealthStore, and depicts users' mobility
-health data in the app. 
+This app accesses ussers' health data via the IOS Health store, and depicts users' mobility health data in the app. 
 
 This app runs on iPhone with iOS 14 or the latest.
 
@@ -12,19 +11,14 @@ This app displays your latest walking speed data, as obtained from your device's
 - Note: This sample code project is associated with WWDC20 session [10664: Getting Started in HealthKit](https://developer.apple.com/wwdc20/10664/) and WWDC20 session [10184: Synchronizing Your Health Data with HealthKit](https://developer.apple.com/wwdc20/10184/).
 
 
-## Installation and Run Instruction
+## Installation and Run Instruction 
 
 Run the following commands on a Mac computer:
 
-1. git clone https://github.com/tchan1010/SmoothWalker.git
-
+1  git clone https://github.com/tchan1010/SmoothWalker.git
 2. cd SmoothWalker
-
-3. git checkout depictLatestWalkingSpeed
-
-4. Run Xcode on the SmoothWalker.xcodeproj file
-
-5. Install the app onto your iPhone via Xcode
+3. Run Xcode on the SmoothWalker.xcodeproj file
+4. Install the app onto your iPhone via Xcode
 
 Once you have the app installed on iPhone, open the app and click the Walking Speed icon at the bottom tab bar.
 
@@ -34,10 +28,30 @@ Once the app obtains the walking speed data, you will see three charts appear on
 
 There are two branches in this release:
 
-1. depictWalkingSpeed
+1. depictWalkingSpeed  
 
-    Show the walking speed charts based on a set of mock data
+    Show the average walking speed charts based on a set of mock data
 
-2. depictLatestWalkingSpeed  
+2. depictLatestWalkingSpeed
 
-    Show the walking speed charts based on the latest and real data as obtained from the Health store.
+    Show the average walking speed charts based on the latest and real data as obtained from the Health store.
+
+
+## Version History
+
+3/23/21  Created the SmoothWalker GitHub repository
+         Created the depictWalkingSpeed branch
+
+3/26/21  Checked-in updated code for Walking Speed feature.
+
+3/27/21  Show all charts on the Walking Speed main page.
+
+         When user taps on any chart, show a detailed page for that chart (chart and table).
+
+         Added a Settings button in the error message dialog to re-direct user to the Settings app to authorize the app has access to the Health store.
+
+         Show a Fetch button whenever user needs to manually fetch walking speed data from the Health store for the app.
+
+3/28/21  Updated README and checked in final code.
+
+         Created the depictLatestWalkingSpeed branch to fetch the real (last week) walking speed data from the Health store.
