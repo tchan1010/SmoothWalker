@@ -85,6 +85,9 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
             if success {
                 self.loadData()
             }
+            else if let error = error {
+                print("Save to Health store failed: \(error.localizedDescription)")
+            }
         }
     }
     

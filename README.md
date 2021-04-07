@@ -2,11 +2,11 @@
 
 This app accesses ussers' health data via the IOS Health store, and depicts users' mobility health data in the app. 
 
+Specifically, this app collects your average daily walking speed from the Health store, and depicts those data in three charts: daily average walking speed, weekly average walking speed and monthly average walking speed.
+
 This app runs on iPhone with iOS 14 or the latest.
 
-## Overview
-
-This app displays your latest walking speed data, as obtained from your device's Health store, in three charts: daily, weekly and monthly.  
+## Disclosure
 
 - Note: This sample code project is associated with WWDC20 session [10664: Getting Started in HealthKit](https://developer.apple.com/wwdc20/10664/) and WWDC20 session [10184: Synchronizing Your Health Data with HealthKit](https://developer.apple.com/wwdc20/10184/).
 
@@ -26,15 +26,11 @@ To enable the walking speed page, you need to authorize the app to have access r
 
 Once the app obtains the walking speed data, you will see three charts appear on the walking speed page. The charts depict the daily, weekly and monthly average walking speed data. You may click on any chart, and it will depict a detailed page for that chart. The detailed page shows the selected chart, and a table listing all the raw data for that chart. You may dismiss a detailed page by tapping on anywhere in that page.
 
-There are two branches in this release:
+There are a branch in this release:
 
-1. depictWalkingSpeed  
+* depictWalkingSpeed  
 
-    Show the average walking speed charts based on a set of mock data
-
-2. depictLatestWalkingSpeed (has been merged to the main branch)
-
-    Show the average walking speed charts based on the latest and real data as obtained from the Health store.
+    Show the average walking speed charts based on a set of mocked data
 
 
 ## Version History
@@ -52,6 +48,7 @@ There are two branches in this release:
 
          Show a Fetch button whenever user needs to manually fetch walking speed data from the Health store for the app.
 
+4/6/21   Merged the depictLatestWalkingSpeed branch to the main branch.
 3/28/21  Updated README and checked in final code.
 
          Created the depictLatestWalkingSpeed branch to fetch the real (last week) walking speed data from the Health store.
