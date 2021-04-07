@@ -65,8 +65,7 @@ func extractDate(_ inDate : Date ) -> (year : Int, month : Int, day : Int)
 //
 private func leapYear(_ year : Int) -> Bool {
 
-    return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0)
-                ? true : false
+     (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0)
 }
 
 //
