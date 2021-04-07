@@ -32,7 +32,7 @@ There are two branches in this release:
 
     Show the average walking speed charts based on a set of mock data
 
-2. depictLatestWalkingSpeed
+2. depictLatestWalkingSpeed (has been merged to the main branch)
 
     Show the average walking speed charts based on the latest and real data as obtained from the Health store.
 
