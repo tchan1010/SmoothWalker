@@ -111,7 +111,7 @@ func composeOffsetDate(_ year : Int, _ month : Int,
             newMonth = 12
             newYear -= 1
         }
-        newDay = maxDaysOfMonth(newMonth,newYear) - newDay
+        newDay = maxDaysOfMonth(newMonth,newYear) + newDay
         return composeDate(newYear,newMonth,newDay)
     }
     return composeDate(year,month,newDay)
