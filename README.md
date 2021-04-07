@@ -15,9 +15,12 @@ This app runs on iPhone with iOS 14 or the latest.
 
 Run the following commands on a Mac computer:
 
-1  git clone https://github.com/tchan1010/SmoothWalker.git
+1. git clone https://github.com/tchan1010/SmoothWalker.git
+
 2. cd SmoothWalker
+
 3. Run Xcode on the SmoothWalker.xcodeproj file
+
 4. Install the app onto your iPhone via Xcode
 
 Once you have the app installed on iPhone, open the app and click the Walking Speed icon at the bottom tab bar.
