@@ -48,7 +48,9 @@ There are a branch in this release:
 
          Show a Fetch button whenever user needs to manually fetch walking speed data from the Health store for the app.
 
-4/6/21   Merged the depictLatestWalkingSpeed branch to the main branch.
 3/28/21  Updated README and checked in final code.
 
          Created the depictLatestWalkingSpeed branch to fetch the real (last week) walking speed data from the Health store.
+
+4/6/21   Merged the depictLatestWalkingSpeed branch to the main branch.
+         Deleted the depictLatestWalkingSpeed branch.
