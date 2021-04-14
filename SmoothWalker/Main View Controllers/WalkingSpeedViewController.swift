@@ -87,11 +87,16 @@ class WalkingSpeedViewController: HealthQueryTableViewController {
         
         switch (WalkingSpeedViewController.displayTimeline) {
         case .daily:
-            var lastSevenDays = [HealthDataTypeValue]()
-            for i in (originalData.count-7)..<originalData.count {
-                lastSevenDays.append(originalData[i])
+            if originalData.count > 7 {
+                var lastSevenDays = [HealthDataTypeValue]()
+                for i in (originalData.count-7)..<originalData.count {
+                    lastSevenDays.append(originalData[i])
+                }
+                dataValues = lastSevenDays
             }
-            dataValues = lastSevenDays
+            else {
+                dataValues = originalData
+            }
         case .weekly:
             dataValues = xlateWeeklyDataValues(originalData)
             break

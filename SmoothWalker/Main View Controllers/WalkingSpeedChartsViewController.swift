@@ -204,9 +204,15 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
     {
-        var lastSevenDays = [HealthDataTypeValue]()
-        for i in (originalData.count-7)..<originalData.count {
-            lastSevenDays.append(originalData[i])
+        var lastSevenDays : [HealthDataTypeValue]
+        if originalData.count > 7 {
+            lastSevenDays = [HealthDataTypeValue]()
+            for i in (originalData.count-7)..<originalData.count {
+                lastSevenDays.append(originalData[i])
+            }
+        }
+        else {
+            lastSevenDays = originalData
         }
         
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
