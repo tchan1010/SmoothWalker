@@ -19,6 +19,7 @@ import HealthKit
 // Walking speed HKUnit
 //
 let meterPerSecond = HKUnit(from: "m/s")
+let WEEK_SUFFIX = " wk"
 
 //
 // -------------------------------------------------------------------------
@@ -31,6 +32,11 @@ enum Timeline : String, CaseIterable  {
     case monthly = "Monthly"
 }
 
+struct HealthDataValueTemp {
+    var startDate : Date
+    var endDate   : Date
+    var valueSum   : (Double,Int)
+}
 //
 // -------------------------------------------------------------------------
 
@@ -141,14 +147,15 @@ private func addPlaceholderData(_ year : Int, _ month : Int,
 //
 // Check a data is in the weekly range of any bucket, and update value
 //
-private func findAddItemValue(_ data : HealthDataTypeValue,_ dataValues : inout [HealthDataTypeValue]) -> Bool
+private func findAddItemValue(_ data : HealthDataTypeValue,_ dataValues : inout [HealthDataValueTemp]) -> Bool
 {
     for (pos,item) in dataValues.enumerated().reversed() {
         
         if  data.startDate >= item.startDate &&
             data.startDate <= item.endDate
         {
-            dataValues[pos].value += data.value / 7.0
+            dataValues[pos].valueSum.0 += data.value
+            dataValues[pos].valueSum.1 += 1
             return true
         }
     }
@@ -161,12 +168,13 @@ private func findAddItemValue(_ data : HealthDataTypeValue,_ dataValues : inout 
 func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataTypeValue]
 {
     var dataValues = [HealthDataTypeValue]()
+    var tmpValues = [HealthDataValueTemp]()
     
     let calendar: Calendar = .current
     
     rawData.forEach {
     
-        if !findAddItemValue($0,&dataValues) {
+        if !findAddItemValue($0,&tmpValues) {
             
             // create a new bucket for a calendar week
             
@@ -183,10 +191,18 @@ func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataType
             
             let lastWeekDate = composeOffsetDate(year,month,day,7-weekday)!
             
-            let data = HealthDataTypeValue(startDate: firstWeekDate!, endDate: lastWeekDate, value: $0.value / 7.0)
+            let data = HealthDataValueTemp(startDate: firstWeekDate!, endDate: lastWeekDate, valueSum: ($0.value,1) )
             
-            dataValues.append(data)
+            tmpValues.append(data)
         }
+    }
+    
+    tmpValues.forEach {
+        let dataVal = HealthDataTypeValue( startDate: $0.startDate,
+                                           endDate: $0.endDate,
+                                           value: $0.valueSum.0 / Double($0.valueSum.1)
+                                        )
+        dataValues.append(dataVal)
     }
     
     // Optional: make the chart looks pretty
@@ -240,16 +256,16 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
 {
     var dataValues = [HealthDataTypeValue]()
     
-    var xlateMap = [String:Double]()
+    var xlateMap = [String:(Double,Int)]()
     
     rawData.forEach {
         let (year,month,_) = extractDate($0.startDate)
         let key = "\(year)-\(month)"
-        if let value = xlateMap[key] {
-            xlateMap[key] = value + $0.value
+        if let (value,sum) = xlateMap[key] {
+            xlateMap[key] = (value + $0.value, sum + 1)
         }
         else {
-            xlateMap[key] = $0.value
+            xlateMap[key] = ($0.value, 1)
         }
     }
     
@@ -260,7 +276,7 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         {
             let startDate = composeDate(year,month,1)
             let endDate = composeDate(year,month,-1)
-            let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum/Double(maxDaysOfMonth(month,year)))
+            let data = HealthDataTypeValue(startDate:startDate!, endDate:endDate!,value:sum.0/Double(sum.1))
             dataValues.append(data)
         }
     }

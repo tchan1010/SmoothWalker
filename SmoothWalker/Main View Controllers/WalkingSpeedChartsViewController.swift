@@ -131,7 +131,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     @objc
     private func fetchLatestData() {
         
-        self.queryPredicate = createLastWeekPredicate(from:Date())
+        self.queryPredicate = createLastMonthPredicate(from:Date())
         self.loadData()
     }
     
@@ -204,15 +204,20 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     //
     private func setupDailyDataValues(_ dataItem : inout (dataTypeIdentifier: String, values: [Double], labels: [String], timeStamp : String?) )
     {
+        var lastSevenDays = [HealthDataTypeValue]()
+        for i in (originalData.count-7)..<originalData.count {
+            lastSevenDays.append(originalData[i])
+        }
+        
         (dataItem.values,dataItem.labels,dataItem.timeStamp) =
                (
-                   originalData.map{ $0.value },
+                   lastSevenDays.map{ $0.value },
                  
-                   originalData.map{
+                   lastSevenDays.map{
                        let (_,month,day) = extractDate($0.startDate)
                        return "\(month)/\(day)" },
                 
-                   getChartTimeStamp(originalData)!
+                   getChartTimeStamp(lastSevenDays)!
                )
      }
     
@@ -231,8 +236,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 dataValues.map { $0.value },
                 
                 dataValues.map{
-                      dateFormatter.string(from:$0.startDate) + "-" +
-                      dateFormatter.string(from:$0.endDate) },
+                    dateFormatter.string(from:$0.startDate) + WEEK_SUFFIX },
+                        //+ dateFormatter.string(from:$0.endDate) },
                 
                 getChartTimeStamp(dataValues)!
             )
