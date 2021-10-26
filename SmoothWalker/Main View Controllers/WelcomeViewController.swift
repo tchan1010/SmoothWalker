@@ -33,30 +33,28 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
     }
     
     func getHealthAuthorizationRequestStatus() {
-        print("Checking HealthKit authorization status...")
         
-        if !HKHealthStore.isHealthDataAvailable() {
+        guard HKHealthStore.isHealthDataAvailable() else {
             presentHealthDataNotAvailableError()
-            
             return
         }
         
         healthStore.getRequestStatusForAuthorization(toShare: shareTypes, read: readTypes) { (authorizationRequestStatus, error) in
             
             var status: String = ""
+            var enabled = true
             if let error = error {
                 status = "HealthKit Authorization Error: \(error.localizedDescription)"
             } else {
                 switch authorizationRequestStatus {
                 case .shouldRequest:
                     self.hasRequestedHealthData = false
-                    
                     status = "The application has not yet requested authorization for all of the specified data types."
                 case .unknown:
                     status = "The authorization request status could not be determined because an error occurred."
                 case .unnecessary:
+                    enabled = false
                     self.hasRequestedHealthData = true
-                    
                     status = "The application has already requested authorization for the specified data types. "
                     status += self.createAuthorizationStatusDescription(for: self.shareTypes)
                 default:
@@ -68,6 +66,10 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
             
             // Results come back on a background thread. Dispatch UI updates to the main thread.
             DispatchQueue.main.async {
+                self.actionButton.isEnabled = enabled
+                if !enabled {
+                    self.actionButton.isHidden = true
+                }
                 self.descriptionLabel.text = status
             }
         }
@@ -80,16 +82,15 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
     }
     
     func requestHealthAuthorization() {
-        print("Requesting HealthKit authorization...")
         
-        if !HKHealthStore.isHealthDataAvailable() {
+        guard HKHealthStore.isHealthDataAvailable() else {
             presentHealthDataNotAvailableError()
-            
             return
         }
         
         healthStore.requestAuthorization(toShare: shareTypes, read: readTypes) { (success, error) in
             var status: String = ""
+            var enabled = true
             
             if let error = error {
                 status = "HealthKit Authorization Error: \(error.localizedDescription)"
@@ -100,7 +101,7 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
                     } else {
                         status = "HealthKit authorization request was successful! "
                     }
-                    
+                    enabled = false
                     status += self.createAuthorizationStatusDescription(for: self.shareTypes)
                     
                     self.hasRequestedHealthData = true
@@ -113,6 +114,10 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
             
             // Results come back on a background thread. Dispatch UI updates to the main thread.
             DispatchQueue.main.async {
+                self.actionButton.isEnabled = enabled
+                if !enabled {
+                    self.actionButton.isHidden = true
+                }
                 self.descriptionLabel.text = status
             }
         }

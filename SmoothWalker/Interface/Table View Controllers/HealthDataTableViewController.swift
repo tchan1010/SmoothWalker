@@ -86,12 +86,14 @@ class HealthDataTableViewController: DataTableViewController {
         let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         
         for dataType in HealthData.readDataTypes {
-            let actionTitle = getDataTypeName(for: dataType.identifier)
-            let action = UIAlertAction(title: actionTitle, style: .default) { [weak self] (action) in
-                self?.didSelectDataTypeIdentifier(dataType.identifier)
+            if let actionTitle = getDataTypeName(for: dataType.identifier),
+               !actionTitle.contains("Six")
+            {
+                let action = UIAlertAction(title: actionTitle, style: .default) { [weak self] (action) in
+                    self?.didSelectDataTypeIdentifier(dataType.identifier)
+                }
+                alertController.addAction(action)
             }
-            
-            alertController.addAction(action)
         }
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel)
