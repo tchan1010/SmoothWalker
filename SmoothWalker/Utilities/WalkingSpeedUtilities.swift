@@ -185,7 +185,6 @@ func xlateWeeklyDataValues(_ rawData : [HealthDataTypeValue]) -> [HealthDataType
             var firstWeekDate = composeOffsetDate(year,month,day,-weekday+1)
             
             if firstWeekDate == nil {
-                print("**** Got firstWeekDate failed!")
                 firstWeekDate = $0.startDate
             }
             
@@ -281,7 +280,6 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
         }
     }
     
-    
     // HashMap is not sorted
     dataValues.sort { $0.startDate < $1.startDate }
     
@@ -309,4 +307,48 @@ func xlateMonthlyDataValues(_ rawData : [HealthDataTypeValue]) ->
 func computeMaxValue(_ targetValue : Double) -> CGFloat
 {
     CGFloat(Double(((Int(targetValue * 100.0) / 25) + 1)) * 0.25)
+}
+
+//
+// -------------------------------------------------------------------------
+//
+// Shared between WeeklyReport and WalkingSpeedChartsViewController
+// Override the hr:min:sec in the provided date
+// to facilitate the xlation of date data later on
+//
+func simpleDate(_ old : Date) -> Date {
+    let (year,month,day) = extractDate(old)
+    return composeDate(year,month,day)!
+}
+
+//
+// Convert multiple health records of the same date
+// into a single health record
+//
+func compactDataValues(_ dataValues : inout [HealthDataTypeValue],
+                       _ dateLastUpdated : inout Date?)
+{
+    guard dataValues.count > 1 else {
+        return
+    }
+    
+    dataValues.sort{ $0.startDate < $1.startDate }
+    
+    var num = 0
+    for i in 1..<dataValues.count {
+        if dataValues[i-1].startDate == dataValues[i].startDate {
+            dataValues[i].value += dataValues[i-1].value
+            dataValues[i-1].value = 0
+            num = num == 0 ? 2 : num + 1
+        }
+        else if num > 0 {
+            dataValues[i-1].value /= Double(num)
+            num = 0
+        }
+    }
+    if num  > 0 {
+        dataValues[dataValues.count-1].value /= Double(num)
+    }
+    dataValues = dataValues.filter{ $0.value > 0 }
+    dateLastUpdated = dataValues.last?.endDate
 }

@@ -27,13 +27,13 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     // Data passed in from WalkingSpeedViewController
     var originalData = [HealthDataTypeValue]()
     
-    var dataValues : [HealthDataTypeValue] = []
+    var dataValues = [HealthDataTypeValue]()
     
-    var queries: [HKAnchoredObjectQuery] = []
+    var queries = [HKAnchoredObjectQuery]()
     
     var fetchButton : UIBarButtonItem?
     
-    private let NO_MOBILITY_DATA = "No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to access the Health app in the Settings app."
+    private let NO_MOBILITY_DATA = "No walking speed data. If you have denied the app access to the Health store's Walking Speed data, you may authorize the app to have access to that category in the Health app. You may click the Settings button to be transfered to the Settings app, where you can find the Health app."
     
     // MARK: - View Life Cycle
     
@@ -44,6 +44,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         super.viewDidLoad()
         
+           /* dataTypeIdentifier, values, labels, timeStamp */
         data = [ (mobilityContent[0], [], [], nil), // daily
                  (mobilityContent[0], [], [], nil), // weekly
                  (mobilityContent[0], [], [], nil)  // monthly
@@ -55,17 +56,17 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if !originalData.isEmpty { return }
+        guard originalData.isEmpty else { return }
         
-        HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { [self] (success) in
+        HealthData.requestHealthDataAccessIfNeeded(dataTypes: [dataTypeIdentifier]) { [weak self] (success) in
             if success {
                 
-                if !self.originalData.isEmpty {
+                if !(self?.originalData.isEmpty ?? true) {
                     // Perform the query and reload the data.
-                    self.loadData()
+                    self?.loadData()
                 }
                 else {
-                    self.fetchLatestData()
+                    self?.fetchLatestData()
                 }
             }
         }
@@ -87,7 +88,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                     self.navigationItem.rightBarButtonItem = self.fetchButton!
                 }
             }
-            else if self.fetchButton != nil {
+            else {
                 self.fetchButton = nil
                 self.navigationItem.rightBarButtonItem = nil
             }
@@ -95,37 +96,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     }
     
     // MARK: Network
-    
-    //
-    // Convert multiple health records of the same date
-    // into a single health record
-    //
-    private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
-    {
-        guard dataValues.count > 1 else {
-            return
-        }
-        
-        dataValues.sort{ $0.startDate < $1.startDate }
-        
-        var num = 0
-        for i in 1..<dataValues.count {
-            if dataValues[i-1].startDate == dataValues[i].startDate {
-                dataValues[i].value += dataValues[i-1].value
-                dataValues[i-1].value = 0
-                num = num == 0 ? 2 : num + 1
-            }
-            else if num > 0 {
-                dataValues[i-1].value /= Double(num)
-                num = 0
-            }
-        }
-        if num  > 0 {
-            dataValues[dataValues.count-1].value /= Double(num)
-        }
-        dataValues = dataValues.filter{ $0.value > 0 }
-        self.dateLastUpdated = dataValues.last?.endDate
-    }
     
     // Fetch lastest average walking speed data from Health store
     @objc
@@ -154,10 +124,10 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     // Direct user to the Settings app, in which they can find the Health app
     private func openSettings() {
         
-        let url = URL(string:UIApplication.openSettingsURLString)
-        if UIApplication.shared.canOpenURL(url!){
-                // can open succeeded.. opening the url
-            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        if let url = URL(string:UIApplication.openSettingsURLString),
+             UIApplication.shared.canOpenURL(url)
+        {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
    
@@ -190,9 +160,9 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             else {
                 // Failure: No data. Tell users and show the Fetch button
                 
-                DispatchQueue.main.async { [self] in
-                    self.showMsgAction(msg:NO_MOBILITY_DATA)
-                    self.turnOnOffFetchButton(true)
+                DispatchQueue.main.async { [weak self] in
+                    self?.showMsgAction(msg:self!.NO_MOBILITY_DATA)
+                    self?.turnOnOffFetchButton(true)
                 }
             }
         }
@@ -243,7 +213,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 
                 dataValues.map{
                     dateFormatter.string(from:$0.startDate) + WEEK_SUFFIX },
-                        //+ dateFormatter.string(from:$0.endDate) },
                 
                 getChartTimeStamp(dataValues)!
             )
@@ -283,32 +252,24 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             guard let samples = samplesOrNil else { return }
             
             self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
-                var dataValue = HealthDataTypeValue(
-                    startDate: self.simpleDate(sample.startDate),
-                    endDate: self.simpleDate(sample.endDate),
+                var data = HealthDataTypeValue(
+                    startDate: simpleDate(sample.startDate),
+                    endDate: simpleDate(sample.endDate),
                     value: .zero)
                 if let quantitySample = sample as? HKQuantitySample,
                    let unit = preferredUnit(for: quantitySample) {
-                    dataValue.value = quantitySample.quantity.doubleValue(for: unit)
+                    data.value = quantitySample.quantity.doubleValue(for: unit)
                 }
                 
-                return dataValue
+                return data
             }
             
-            self.compactDataValues(&self.dataValues)
+            compactDataValues(&self.dataValues,&self.dateLastUpdated)
             
             completion()
         }
         
         HealthData.healthStore.execute(anchoredObjectQuery)
-    }
-    
-    // Override the hr:min:sec in the provided date
-    // to facilitate the xlation of date data later on
-    //
-    func simpleDate(_ old : Date) -> Date {
-        let (year,month,day) = extractDate(old)
-        return composeDate(year,month,day)!
     }
     
     // Collect data, labels and time stamp for
@@ -317,7 +278,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
     func setupChartsData( completion : @escaping () -> Void) {
      
         if  !originalData.isEmpty  {
-       
             setupDailyDataValues(&data[0])
             setupWeeklyDataValues(&data[1])
             setupMonthlyDataValues(&data[2])

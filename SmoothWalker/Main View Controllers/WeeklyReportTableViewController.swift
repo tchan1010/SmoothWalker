@@ -138,8 +138,8 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
             
             self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
                 var dataValue = HealthDataTypeValue(
-                    startDate: self.simpleDate(sample.startDate),
-                    endDate: self.simpleDate(sample.endDate),
+                    startDate: simpleDate(sample.startDate),
+                    endDate: simpleDate(sample.endDate),
                     value: .zero)
                 if let quantitySample = sample as? HKQuantitySample,
                    let unit = preferredUnit(for: quantitySample) {
@@ -149,54 +149,14 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
                 return dataValue
             }
             
-            self.compactDataValues(&self.dataValues)
+            compactDataValues(&self.dataValues,&self.dateLastUpdated)
             
             completion()
         }
         
         HealthData.healthStore.execute(anchoredObjectQuery)
     }
-    
-    // shared between WeeklyReport and WalkingSpeedChartsViewController
-    // Override the hr:min:sec in the provided date
-    // to facilitate the xlation of date data later on
-    //
-    func simpleDate(_ old : Date) -> Date {
-        let (year,month,day) = extractDate(old)
-        return composeDate(year,month,day)!
-    }
-    
-    // shared between WeeklyReport and WalkingSpeedChartsViewController
-    // Convert multiple health records of the same date
-    // into a single health record
-    //
-    private func compactDataValues(_ dataValues : inout [HealthDataTypeValue])
-    {
-        guard dataValues.count > 1 else {
-            return
-        }
-        
-        dataValues.sort{ $0.startDate < $1.startDate }
-        
-        var num = 0
-        for i in 1..<dataValues.count {
-            if dataValues[i-1].startDate == dataValues[i].startDate {
-                dataValues[i].value += dataValues[i-1].value
-                dataValues[i-1].value = 0
-                num = num == 0 ? 2 : num + 1
-            }
-            else if num > 0 {
-                dataValues[i-1].value /= Double(num)
-                num = 0
-            }
-        }
-        if num  > 0 {
-            dataValues[dataValues.count-1].value /= Double(num)
-        }
-        dataValues = dataValues.filter{ $0.value > 0 }
-        self.dateLastUpdated = dataValues.last?.endDate
-    }
-    
+
 
     // MARK: Function Overrides
     

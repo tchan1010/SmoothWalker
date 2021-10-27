@@ -44,7 +44,7 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
     }
     
     private func setUpConstraints() {
-        var constraints: [NSLayoutConstraint] = []
+        var constraints = [NSLayoutConstraint]()
         
         constraints += createChartViewConstraints()
         
@@ -65,8 +65,8 @@ class DataTypeCollectionViewCell: UICollectionViewCell {
     
     func getChartHeader(_ row : Int) -> String {
         switch (row) {
-        case 0: return "Daily Average Walking Speed"
-        case 1: return "Weekly Average Walking Speed"
+        case 0:  return "Daily Average Walking Speed"
+        case 1:  return "Weekly Average Walking Speed"
         default: return "Monthly Average Walking Speed"
         }
     }

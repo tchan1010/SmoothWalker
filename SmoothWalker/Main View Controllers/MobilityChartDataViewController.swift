@@ -54,7 +54,7 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     }
     
     func setUpBackgroundObservers() {
-        data.compactMap { getSampleType(for: $0.dataTypeIdentifier) }.forEach { (sampleType) in
+       data.compactMap { getSampleType(for: $0.dataTypeIdentifier) }.forEach { (sampleType) in
             createAnchoredObjectQuery(for: sampleType)
         }
     }

@@ -73,33 +73,39 @@ class WeeklyQuantitySampleTableViewController: HealthDataTableViewController, He
             let endDate = now
             
             statisticsCollection.enumerateStatistics(from: startDate, to: endDate) { [weak self] (statistics, stop) in
-                var dataValue = HealthDataTypeValue(startDate: statistics.startDate,
+                var data = HealthDataTypeValue(startDate: statistics.startDate,
                                                     endDate: statistics.endDate,
                                                     value: 0)
                 
                 if let quantity = getStatisticsQuantity(for: statistics, with: statisticsOptions),
                    let identifier = self?.dataTypeIdentifier,
                    let unit = preferredUnit(for: identifier) {
-                    dataValue.value = quantity.doubleValue(for: unit)
+                    data.value = quantity.doubleValue(for: unit)
                 }
                 
-               // print("--- add dataValue: \(dataValue), statistics: \(statistics)")
-                
-                self?.dataValues.append(dataValue)
+                self?.dataValues.append(data)
             }
             
             completion()
         }
         
         query.initialResultsHandler = { query, statisticsCollection, error in
-            if let statisticsCollection = statisticsCollection {
+            
+            if let error = error {
+                print(error)
+            }
+            else if let statisticsCollection = statisticsCollection {
                 updateInterfaceWithStatistics(statisticsCollection)
             }
         }
         
         query.statisticsUpdateHandler = { [weak self] query, statistics, statisticsCollection, error in
             // Ensure we only update the interface if the visible data type is updated
-            if let statisticsCollection = statisticsCollection, query.objectType?.identifier == self?.dataTypeIdentifier {
+            
+            if let error = error {
+                print(error)
+            }
+            else if let statisticsCollection = statisticsCollection, query.objectType?.identifier == self?.dataTypeIdentifier {
                 updateInterfaceWithStatistics(statisticsCollection)
             }
         }
