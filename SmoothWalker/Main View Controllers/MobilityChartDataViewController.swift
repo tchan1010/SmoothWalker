@@ -30,13 +30,12 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-        // Authorization
-        if !queries.isEmpty { return }
         
         HealthData.requestHealthDataAccessIfNeeded(dataTypes: mobilityContent) { (success) in
             if success {
-                self.setUpBackgroundObservers()
+                if self.queries.isEmpty {
+                    self.setUpBackgroundObservers()
+                }
                 self.loadData()
             }
         }
@@ -78,8 +77,6 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
                 return
             }
             
-            print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
-            
             // Update anchor for sample type
             HealthData.updateAnchor(newAnchor, from: query)
             
@@ -96,7 +93,7 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
                 return
             }
             
-            print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
+            //print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
             
             // Update anchor for sample type
             HealthData.updateAnchor(newAnchor, from: query)

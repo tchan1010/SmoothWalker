@@ -101,11 +101,9 @@ func createHorizontalAxisMarkers(for dates: [Date]) -> [String] {
     if WalkingSpeedViewController.displayTimeline == .weekly {
        
         return dates.map{
-            let (year,month,day) = extractDate($0)
+            
             return dateFormatter.string(from:$0) + WEEK_SUFFIX
-                /*
-                + "-" + dateFormatter.string(from:composeOffsetDate(year,month,day,6)!)
-                */
+
         }
     }
     

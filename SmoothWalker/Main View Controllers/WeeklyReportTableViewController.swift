@@ -51,57 +51,9 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
     
     @objc
     override func didTapFetchButton() {
-        /* Don't use mocked server data
-        Network.pull() { [weak self] (serverResponse) in
-            self?.dateLastUpdated = serverResponse.date
-            self?.queryPredicate = createLastWeekPredicate(from: serverResponse.date)
-            self?.handleServerResponse(serverResponse)
-        }
-         */
+        
     }
     
-    
-    // MARK: - Network
-    
-    /// Handle a response fetched from a remote server. This function will also save any HealthKit samples and update the UI accordingly.
-    /*
-    override func handleServerResponse(_ serverResponse: ServerResponse) {
-        let weeklyReport = serverResponse.weeklyReport
-        
-        let addedSamples = weeklyReport.samples.map { (serverHealthSample) -> HKQuantitySample in
-                        
-            // Set the sync identifier and version
-            var metadata = [String: Any]()
-            let sampleSyncIdentifier = String(format: "%@_%@", weeklyReport.identifier,
-                        serverHealthSample.syncIdentifier
-                )
-    
-            metadata[HKMetadataKeySyncIdentifier] = sampleSyncIdentifier
-            metadata[HKMetadataKeySyncVersion] = serverHealthSample.syncVersion
-            
-            // Create HKQuantitySample
-            let quantity = HKQuantity(unit: .meter(), doubleValue: serverHealthSample.value)
-            let sampleType = HKQuantityType.quantityType(forIdentifier: .sixMinuteWalkTestDistance)!
-            let quantitySample = HKQuantitySample(type: sampleType,
-                                                  quantity: quantity,
-                                                  start: serverHealthSample.startDate,
-                                                  end: serverHealthSample.endDate,
-                                                  metadata: metadata)
-            return quantitySample
-        }
-        
-        HealthData.healthStore.save(addedSamples) { (success, error) in
-            if success {
-                self.loadData()
-            }
-            else if let error = error {
-                print("Save to Health store failed: \(error.localizedDescription)")
-            }
-        }
-    }
-    */
-    
-
     override func loadData() {
         
         self.dataValues = []
@@ -127,7 +79,7 @@ class WeeklyReportTableViewController: HealthQueryTableViewController {
     override func performQuery(completion: @escaping () -> Void) {
         
         guard let sampleType = getSampleType(for: dataTypeIdentifier) else { return }
-        
+
         let anchoredObjectQuery = HKAnchoredObjectQuery(type: sampleType,
                                 predicate: queryPredicate,
                                 anchor: queryAnchor,

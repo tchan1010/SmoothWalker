@@ -16,6 +16,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
             
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            
+            if let error = error {
+                print("Notification not authorized: \(error.localizedDescription)")
+            }
+            else {
+                print("Notification request: \(granted)")
+            }
+            
+            // Enable or disable features based on the authorization.
+        }
         return true
     }
 

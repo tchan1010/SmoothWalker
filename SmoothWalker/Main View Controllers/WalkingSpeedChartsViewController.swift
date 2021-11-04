@@ -289,20 +289,39 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
             
             guard let samples = samplesOrNil else { return }
+           
             // Update anchor for sample type
-           // HealthData.updateAnchor(newAnchor, from: query)
+            HealthData.updateAnchor(newAnchor, from: query)
             
             if UIApplication.shared.applicationState == .background {
             
                 // The results come back on an anonymous background queue.
-               // Network.push(addedSamples: samples, deletedSamples: deletedObjectsOrNil)
+                Network.push(addedSamples: samples, deletedSamples: deletedObjectsOrNil)
                 
-                let notification = UILocalNotification()
-                notification.alertBody = "Background Delivery works in Health App"
-                notification.alertAction = "open"
-                notification.soundName =  UILocalNotificationDefaultSoundName
+                let center = UNUserNotificationCenter.current()
+                center.getNotificationSettings { settings in
+                    guard (settings.authorizationStatus == .authorized) ||
+                          (settings.authorizationStatus == .provisional) else { return }
 
-                UIApplication.shared.scheduleLocalNotification(notification)
+                    if settings.alertSetting == .enabled {
+                        // Schedule an alert-only notification.
+                    } else {
+                        // Schedule a notification with a badge and sound.
+                        return
+                    }
+                }
+               
+                let content = UNMutableNotificationContent()
+                content.title = "SmoothWalker"
+                content.body = "Background refresh triggered"
+                
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0, repeats: false)
+
+                // Create the request
+                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+                // add notification request
+                UNUserNotificationCenter.current().add(request)
             }
             else {
                 
