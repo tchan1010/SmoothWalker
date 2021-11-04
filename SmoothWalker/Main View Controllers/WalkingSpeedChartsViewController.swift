@@ -44,6 +44,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         super.viewDidLoad()
         
+        print("WalkingSpeedChartsView: viewdidLoad...")
+        
            /* dataTypeIdentifier, values, labels, timeStamp */
         data = [ (mobilityContent[0], [], [], nil), // daily
                  (mobilityContent[0], [], [], nil), // weekly
@@ -76,6 +78,8 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         super.viewWillAppear(animated)
     
         WalkingSpeedViewController.displayTimeline = .daily
+       
+        self.originalData = []
     }
     
     private func turnOnOffFetchButton(_ turnOn : Bool) {
@@ -236,6 +240,23 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
              )
     }
     
+    func xlateSamples(_ samples : [HKSample] )
+    {
+        self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
+            var data = HealthDataTypeValue(
+                startDate: simpleDate(sample.startDate),
+                endDate: simpleDate(sample.endDate),
+                value: .zero)
+            if let quantitySample = sample as? HKQuantitySample,
+               let unit = preferredUnit(for: quantitySample) {
+                data.value = quantitySample.quantity.doubleValue(for: unit)
+            }
+            
+            return data
+        }
+        compactDataValues(&self.dataValues,&self.dateLastUpdated)
+    }
+    
     //
     // Query data from Health store
     //
@@ -243,7 +264,7 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         guard let sampleType = getSampleType(for: dataTypeIdentifier) else { return }
         
-        let anchoredObjectQuery = HKAnchoredObjectQuery(type: sampleType,
+        let anchoredQuery = HKAnchoredObjectQuery(type: sampleType,
                                 predicate: queryPredicate,
                                 anchor: queryAnchor,
                                 limit: queryLimit) {
@@ -251,25 +272,57 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
             
             guard let samples = samplesOrNil else { return }
             
-            self.dataValues = samples.map { (sample) -> HealthDataTypeValue in
-                var data = HealthDataTypeValue(
-                    startDate: simpleDate(sample.startDate),
-                    endDate: simpleDate(sample.endDate),
-                    value: .zero)
-                if let quantitySample = sample as? HKQuantitySample,
-                   let unit = preferredUnit(for: quantitySample) {
-                    data.value = quantitySample.quantity.doubleValue(for: unit)
-                }
-                
-                return data
-            }
-            
-            compactDataValues(&self.dataValues,&self.dateLastUpdated)
+            self.xlateSamples(samples)
             
             completion()
         }
         
-        HealthData.healthStore.execute(anchoredObjectQuery)
+        anchoredQuery.updateHandler = { (query, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
+            
+            // Handle error
+            if let error = errorOrNil {
+                print("HKAnchoredObjectQuery initialResultsHandler with identifier \(sampleType.identifier) error: \(error.localizedDescription)")
+                
+                return
+            }
+            
+            print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
+            
+            guard let samples = samplesOrNil else { return }
+            // Update anchor for sample type
+           // HealthData.updateAnchor(newAnchor, from: query)
+            
+            if UIApplication.shared.applicationState == .background {
+            
+                // The results come back on an anonymous background queue.
+               // Network.push(addedSamples: samples, deletedSamples: deletedObjectsOrNil)
+                
+                let notification = UILocalNotification()
+                notification.alertBody = "Background Delivery works in Health App"
+                notification.alertAction = "open"
+                notification.soundName =  UILocalNotificationDefaultSoundName
+
+                UIApplication.shared.scheduleLocalNotification(notification)
+            }
+            else {
+                
+                self.xlateSamples(samples)
+                
+                self.originalData = self.dataValues
+                
+                self.setupChartsData {
+                    
+                    DispatchQueue.main.async { [weak self] in
+                        
+                        // Update and display the daily, weekly, monthly charts
+                        
+                        self?.reloadData()
+                    }
+                }
+            }
+        }
+        
+        HealthData.healthStore.execute(anchoredQuery)
     }
     
     // Collect data, labels and time stamp for

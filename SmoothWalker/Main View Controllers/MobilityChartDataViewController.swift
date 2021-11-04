@@ -30,7 +30,7 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         // Authorization
         if !queries.isEmpty { return }
         

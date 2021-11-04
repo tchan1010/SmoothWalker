@@ -57,6 +57,8 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
                     self.hasRequestedHealthData = true
                     status = "The application has already requested authorization for the specified data types. "
                     status += self.createAuthorizationStatusDescription(for: self.shareTypes)
+                    
+                    self.enableHKBackgroundDelivery()
                 default:
                     break
                 }
@@ -81,6 +83,22 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
         requestHealthAuthorization()
     }
     
+    func enableHKBackgroundDelivery() {
+        guard let walkingSpeed = getSampleType(for:  HKQuantityTypeIdentifier.walkingSpeed.rawValue) else {
+            return
+        }
+        
+        healthStore.enableBackgroundDelivery(for: walkingSpeed, frequency: .immediate, withCompletion: { success, error in
+            
+            if let error = error {
+                print("Enable background delivery failed: \(error)")
+            }
+            else {
+                print("Enable background delivery success: \(success)")
+            }
+        })
+    }
+
     func requestHealthAuthorization() {
         
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -105,6 +123,9 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
                     status += self.createAuthorizationStatusDescription(for: self.shareTypes)
                     
                     self.hasRequestedHealthData = true
+                    
+                    self.enableHKBackgroundDelivery()
+                    
                 } else {
                     status = "HealthKit authorization did not complete successfully."
                 }
@@ -117,6 +138,8 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
                 self.actionButton.isEnabled = enabled
                 if !enabled {
                     self.actionButton.isHidden = true
+                    
+
                 }
                 self.descriptionLabel.text = status
             }

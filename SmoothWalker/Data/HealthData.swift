@@ -10,7 +10,7 @@ import HealthKit
 
 class HealthData {
     
-    static let healthStore: HKHealthStore = HKHealthStore()
+    static let healthStore = HKHealthStore()
     
     // MARK: - Data Types
     
@@ -23,13 +23,14 @@ class HealthData {
     }
     
     private static var allHealthDataTypes: [HKSampleType] {
+        
         let typeIdentifiers: [String] = [
             HKQuantityTypeIdentifier.stepCount.rawValue,
             HKQuantityTypeIdentifier.distanceWalkingRunning.rawValue,
          //   HKQuantityTypeIdentifier.sixMinuteWalkTestDistance.rawValue,
             HKQuantityTypeIdentifier.walkingSpeed.rawValue
         ]
-        
+
         return typeIdentifiers.compactMap { getSampleType(for: $0) }
     }
     
@@ -52,14 +53,20 @@ class HealthData {
     class func requestHealthDataAccessIfNeeded(toShare shareTypes: Set<HKSampleType>?,
                                                read readTypes: Set<HKObjectType>?,
                                                completion: @escaping (_ success: Bool) -> Void) {
-        if !HKHealthStore.isHealthDataAvailable() {
-            fatalError("Health data is not available!")
+       
+        guard HKHealthStore.isHealthDataAvailable() else {
+            print("Health data is not available!")
+            completion(false)
+            return
         }
         
         print("Requesting HealthKit authorization...")
+        
         healthStore.requestAuthorization(toShare: shareTypes, read: readTypes) { (success, error) in
             if let error = error {
                 print("requestAuthorization error:", error.localizedDescription)
+                completion(false)
+                return
             }
             
             if success {
@@ -87,8 +94,9 @@ class HealthData {
                                endDate: Date = Date(),
                                interval: DateComponents,
                                completion: @escaping (HKStatisticsCollection) -> Void) {
+     
         guard let quantityType = HKObjectType.quantityType(forIdentifier: identifier) else {
-            fatalError("*** Unable to create a step count type ***")
+            fatalError("Unable to get quantityType for \(identifier)")
         }
         
         let anchorDate = createAnchorDate()

@@ -24,7 +24,6 @@ class WeeklyQuantitySampleTableViewController: HealthDataTableViewController, He
     var query: HKStatisticsCollectionQuery?
     
     // MARK: - View Life Cycle
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -32,8 +31,6 @@ class WeeklyQuantitySampleTableViewController: HealthDataTableViewController, He
         
         // Request authorization.
         let dataTypeValues = Set([quantityType])
-        
-        print("Requesting HealthKit authorization...")
         
         self.healthStore.requestAuthorization(toShare: dataTypeValues, read: dataTypeValues) { (success, error) in
             if success {
