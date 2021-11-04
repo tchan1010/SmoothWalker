@@ -44,8 +44,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
         
         super.viewDidLoad()
         
-        print("WalkingSpeedChartsView: viewdidLoad...")
-        
            /* dataTypeIdentifier, values, labels, timeStamp */
         data = [ (mobilityContent[0], [], [], nil), // daily
                  (mobilityContent[0], [], [], nil), // weekly
@@ -285,8 +283,6 @@ class WalkingSpeedChartsViewController: DataTypeCollectionViewController
                 
                 return
             }
-            
-            print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
             
             guard let samples = samplesOrNil else { return }
            

@@ -60,21 +60,12 @@ class HealthData {
             return
         }
         
-        print("Requesting HealthKit authorization...")
-        
         healthStore.requestAuthorization(toShare: shareTypes, read: readTypes) { (success, error) in
             if let error = error {
                 print("requestAuthorization error:", error.localizedDescription)
                 completion(false)
                 return
             }
-            
-            if success {
-                print("HealthKit authorization request was successful!")
-            } else {
-                print("HealthKit authorization was not successful.")
-            }
-            
             completion(success)
         }
     }

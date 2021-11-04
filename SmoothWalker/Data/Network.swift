@@ -55,7 +55,6 @@ class Network {
         print("Pulling data from the server!")
         
         // Load a mock server response from disk to simulate pulling new data.
-        print("Loading mock server response.")
         let response = loadMockServerResponse()
         
         completion(response)

@@ -64,8 +64,6 @@ class WelcomeViewController: SplashScreenViewController, SplashScreenViewControl
                 }
             }
             
-            print(status)
-            
             // Results come back on a background thread. Dispatch UI updates to the main thread.
             DispatchQueue.main.async {
                 self.actionButton.isEnabled = enabled

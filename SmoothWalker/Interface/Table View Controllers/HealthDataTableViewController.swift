@@ -20,6 +20,7 @@ class HealthDataTableViewController: DataTableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateNavigationItem()
+        didSelectDataTypeIdentifier(dataTypeIdentifier)
     }
     
     override func setUpNavigationController() {

@@ -93,8 +93,6 @@ class MobilityChartDataViewController: DataTypeCollectionViewController {
                 return
             }
             
-            //print("HKAnchoredObjectQuery initialResultsHandler has returned for \(sampleType.identifier)!")
-            
             // Update anchor for sample type
             HealthData.updateAnchor(newAnchor, from: query)
             
